@@ -16,15 +16,25 @@ const initialUserData: UserData = {
     accounts: [
          { 
             id: 1, main: true, name: 'Зарплатная', balance: '0 ₽', badge: '129', icon: <RubleIcon />, iconBg: '#4A90E2',
+            cardDesignUrl: 'https://i.imgur.com/QrZADtb.png',
             cards: [
-                {id: 'c1', designUrl: 'https://i.imgur.com/QrZADtb.png'},
-                {id: 'c2', designUrl: 'https://i.imgur.com/3MNT66B.png'},
-                {id: 'c3', designUrl: 'https://i.imgur.com/fmnHpJs.png'},
-                {id: 'c4', designUrl: 'https://i.imgur.com/kt7QVs5.png'},
+                {id: 'c1'}, {id: 'c2'}, {id: 'c3'}, {id: 'c4'}, {id: 'c5'}
             ]
         },
-        { id: 2, main: false, name: 'Переводы', balance: '0 ₽', badge: 'x1', icon: <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>, iconBg: '#4A90E2', cards: [] },
-        { id: 3, main: false, name: 'Сбор на другое', balance: '0 ₽', icon: <ThreeDotsIcon />, iconBg: '#4A90E2', cards: [] },
+        { 
+            id: 2, main: false, name: 'Переводы', balance: '0 ₽', badge: 'x1', 
+            icon: <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>, 
+            iconBg: '#4A90E2', 
+            cards: [],
+            cardDesignUrl: undefined
+        },
+        { 
+            id: 3, main: false, name: 'Сбор на другое', balance: '0 ₽', 
+            icon: <ThreeDotsIcon />, 
+            iconBg: '#4A90E2', 
+            cards: [],
+            cardDesignUrl: undefined
+        },
     ],
     cashbackPartners: [
         {id: 'p1', logoUrl: 'https://i.imgur.com/uplZIqA.png'},
@@ -38,8 +48,8 @@ const initialUserData: UserData = {
         { color: '#E74C3C', percentage: 10 },
     ],
     favoriteContacts: [
-        { id: 1, name: 'Ксения К.', initials: 'КК', banks: [allBanks[0]] },
-        { id: 2, name: 'Андрей Госов', initials: 'АГ', banks: [allBanks[1], allBanks[2]] },
+        { id: 1, name: 'Ксения К.', initials: 'КК', phone: '+79261234567', banks: [allBanks[0]] },
+        { id: 2, name: 'Андрей Госов', initials: 'АГ', phone: '+79031234568', banks: [allBanks[1], allBanks[2]] },
     ]
 }
 

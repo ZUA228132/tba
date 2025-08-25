@@ -2,7 +2,6 @@ export type TabName = 'main' | 'payments' | 'city' | 'chat' | 'more';
 
 export interface Card {
   id: string;
-  designUrl: string;
 }
 
 export interface Account {
@@ -14,6 +13,7 @@ export interface Account {
   icon: React.ReactElement;
   iconBg: string;
   cards: Card[];
+  cardDesignUrl?: string; // One design for all cards in this account
 }
 
 export interface CashbackPartner {
@@ -30,6 +30,7 @@ export interface Bank {
 export interface FavoriteContact {
     id: number;
     name: string;
+    phone: string;
     initials: string;
     banks: Bank[];
 }

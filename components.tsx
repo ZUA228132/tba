@@ -126,10 +126,10 @@ export const InfoCards: React.FC<{ partners: CashbackPartner[], progress: { colo
 
 export const QuickActions: React.FC<{ onAction: (action: string) => void }> = ({ onAction }) => {
     const actions = [
-        { label: 'Перевести по телефону', icon: <TransferIcon />, color: '#F0F0F5' },
-        { label: 'Пополнить', icon: <TopUpIcon />, color: '#F0F0F5' },
-        { label: 'Между счетами', icon: <BetweenAccountsIcon />, color: '#F0F0F5' },
-        { label: 'Сканировать QR-код', icon: <QRIcon />, color: '#F0F0F5' },
+        { label: 'Перевести по телефону', icon: <TransferIcon />, color: 'rgba(52, 199, 89, 0.15)' },
+        { label: 'Пополнить', icon: <TopUpIcon />, color: 'rgba(88, 86, 214, 0.15)' },
+        { label: 'Между счетами', icon: <BetweenAccountsIcon />, color: 'rgba(0, 122, 255, 0.15)' },
+        { label: 'Сканировать QR-код', icon: <QRIcon />, color: 'rgba(255, 149, 0, 0.15)' },
     ];
     return (
         <section className="quick-actions">
@@ -143,11 +143,11 @@ export const QuickActions: React.FC<{ onAction: (action: string) => void }> = ({
     );
 };
 
-export const CardCarousel: React.FC<{ cards: Card[], onAction: (action: string) => void }> = ({ cards, onAction }) => (
+export const CardCarousel: React.FC<{ cards: Card[], designUrl: string, onAction: (action: string) => void }> = ({ cards, designUrl, onAction }) => (
     <div className="card-carousel">
         {cards.map(card => (
             <div key={card.id} className="card-carousel-item" onClick={() => onAction(`Открыть карту ${card.id}`)}>
-                <img src={card.designUrl} alt="Bank Card" />
+                <img src={designUrl} alt="Bank Card" />
             </div>
         ))}
     </div>
@@ -165,7 +165,9 @@ export const AccountCard: React.FC<{ account: Account, isAnimated: boolean, anim
         <div className="account-details">
             <div className="account-info-left">
                 <span className="account-name">{account.name}</span>
-                {account.main && <CardCarousel cards={account.cards} onAction={onAction} />}
+                {account.main && account.cards.length > 0 && account.cardDesignUrl &&
+                    <CardCarousel cards={account.cards} designUrl={account.cardDesignUrl} onAction={onAction} />
+                }
             </div>
              <div className="account-info-right">
                 <span className="account-balance">{account.balance}</span>
@@ -175,14 +177,58 @@ export const AccountCard: React.FC<{ account: Account, isAnimated: boolean, anim
     </div>
 );
 
+const AddContactForm: React.FC<{ onSave: (contact: Omit<FavoriteContact, 'id' | 'initials'>) => void, onCancel: () => void }> = ({ onSave, onCancel }) => {
+    const [name, setName] = useState('');
+    const [phone, setPhone] = useState('');
+    const [selectedBanks, setSelectedBanks] = useState<Bank[]>([]);
+
+    const toggleBank = (bank: Bank) => {
+        setSelectedBanks(prev => 
+            prev.find(b => b.id === bank.id) 
+            ? prev.filter(b => b.id !== bank.id)
+            : [...prev, bank]
+        );
+    };
+
+    const handleSave = () => {
+        onSave({ name, phone, banks: selectedBanks });
+    };
+
+    return (
+        <div className="modal-section">
+            <h3 className="modal-title">Новый контакт</h3>
+            <div className="input-group" style={{gap: '12px'}}>
+                <input type="text" placeholder="ФИО" value={name} onChange={e => setName(e.target.value)} />
+                <input type="tel" placeholder="Номер телефона" value={phone} onChange={e => setPhone(e.target.value)} />
+            </div>
+            <h4 style={{fontSize: '14px', fontWeight: 500, margin: '16px 0 8px 0'}}>Банки контакта</h4>
+            <div className="grid-selector" style={{gridTemplateColumns: 'repeat(auto-fill, minmax(60px, 1fr))', gap: '12px'}}>
+                {allBanks.map(bank => (
+                    <div key={bank.id} className={`grid-item bank-logo ${selectedBanks.find(b => b.id === bank.id) ? 'selected' : ''}`} onClick={() => toggleBank(bank)} style={{aspectRatio: '1', border: '2px solid transparent', padding: '4px', backgroundColor: '#fff'}}>
+                        <img src={bank.logoUrl} alt={bank.name} style={{objectFit: 'contain'}} />
+                    </div>
+                ))}
+            </div>
+            <div style={{display: 'flex', gap: '8px', marginTop: '16px'}}>
+                <button className="modal-button" onClick={handleSave} style={{backgroundColor: '#34c759'}}>Сохранить</button>
+                <button className="modal-button" onClick={onCancel} style={{backgroundColor: 'var(--text-secondary)'}}>Отмена</button>
+            </div>
+        </div>
+    );
+};
+
+
 export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, userData: UserData, setUserData: React.Dispatch<React.SetStateAction<UserData>> }> = ({ isOpen, onClose, userData, setUserData }) => {
     const [tempName, setTempName] = useState(userData.name);
-    const [selectedDesign, setSelectedDesign] = useState(cardDesigns[0]);
     const addToast = useToast();
     const modalRef = useRef<HTMLDivElement>(null);
+    const [isAddingContact, setIsAddingContact] = useState(false);
 
     useEffect(() => {
         setTempName(userData.name);
+        if (!isOpen) {
+            setIsAddingContact(false); // Reset form state on close
+        }
     }, [userData.name, isOpen]);
 
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -190,11 +236,41 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
     };
 
     const saveName = () => {
-        setUserData(prev => ({ ...prev, name: tempName }));
-        addToast('Имя обновлено!');
+        if (tempName.trim() !== userData.name) {
+            setUserData(prev => ({ ...prev, name: tempName.trim() }));
+            addToast('Имя обновлено!');
+        }
+    };
+
+    const handleSetCardDesign = (accountId: number, designUrl: string) => {
+        setUserData(prev => ({
+            ...prev,
+            accounts: prev.accounts.map(acc => acc.id === accountId ? { ...acc, cardDesignUrl: designUrl } : acc)
+        }));
+    };
+
+    const handleAddCard = (accountId: number) => {
+        setUserData(prev => {
+            const newAccounts = prev.accounts.map(acc => {
+                if (acc.id === accountId) {
+                    if (!acc.cardDesignUrl) {
+                        addToast('Сначала выберите дизайн для счета');
+                        return acc;
+                    }
+                    if (acc.cards.length >= 5) {
+                        addToast('Достигнут лимит карт для этого счета');
+                        return acc;
+                    }
+                    addToast('Карта добавлена');
+                    return { ...acc, cards: [...acc.cards, { id: `card-${Date.now()}` }] };
+                }
+                return acc;
+            });
+            return { ...prev, accounts: newAccounts };
+        });
     };
     
-    const addNewAccount = () => {
+    const handleAddNewAccount = (withCard: boolean) => {
         setUserData(prev => {
             const newAccount: Account = {
                 id: Date.now(),
@@ -203,24 +279,25 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
                 balance: "0 ₽",
                 icon: <RubleIcon />,
                 iconBg: '#4A90E2',
-                cards: [{ id: `card-${Date.now()}`, designUrl: selectedDesign }]
+                cards: withCard ? [{ id: `card-${Date.now()}` }] : [],
+                cardDesignUrl: withCard ? cardDesigns[0] : undefined
             };
             return { ...prev, accounts: [...prev.accounts, newAccount] };
         });
         addToast('Новый счет добавлен!');
     };
     
-    const addContact = () => {
-         setUserData(prev => {
-             const newContact: FavoriteContact = {
-                id: Date.now(),
-                name: "Новый контакт",
-                initials: "НК",
-                banks: [allBanks[0], allBanks[1]]
-             };
-             return { ...prev, favoriteContacts: [...prev.favoriteContacts, newContact]}
-         });
-         addToast('Контакт добавлен! (В разработке)');
+    const handleSaveContact = (contactData: Omit<FavoriteContact, 'id' | 'initials'>) => {
+         if (!contactData.name.trim() || !contactData.phone.trim()) {
+            addToast('Введите ФИО и номер телефона');
+            return;
+        }
+        const initials = contactData.name.split(' ').map(n => n[0]).slice(0, 2).join('').toUpperCase();
+        const newContact: FavoriteContact = { ...contactData, id: Date.now(), initials };
+
+         setUserData(prev => ({ ...prev, favoriteContacts: [...prev.favoriteContacts, newContact]}));
+         setIsAddingContact(false);
+         addToast('Контакт сохранен!');
     };
 
     const changeCashbackIcons = () => {
@@ -245,19 +322,14 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
         addToast('Цвета бонусов изменены!');
     }
 
-    // Close modal on outside click
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
                 onClose();
             }
         };
-        if (isOpen) {
-            document.addEventListener('mousedown', handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener('mousedown', handleClickOutside);
-        };
+        if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
     }, [isOpen, onClose]);
 
     if (!isOpen && !document.querySelector('.modal-overlay.open')) return null;
@@ -268,7 +340,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
             <div ref={modalRef} className={`modal-container ${isOpen ? 'open' : ''}`}>
                 <div className="modal-handle"></div>
                 <div className="modal-content">
-                    {/* --- Change Name --- */}
                     <div className="modal-section">
                         <h3 className="modal-title">Профиль</h3>
                         <div className="input-group">
@@ -277,44 +348,57 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
                         </div>
                     </div>
 
-                    {/* --- Add Account --- */}
                     <div className="modal-section">
-                        <h3 className="modal-title">Новый счет</h3>
-                        <p style={{marginBottom: '12px', fontSize: '14px', color: 'var(--text-secondary)'}}>Выберите дизайн карты</p>
-                        <div className="grid-selector">
-                            {cardDesigns.map(design => (
-                                <div key={design} className={`grid-item ${selectedDesign === design ? 'selected' : ''}`} onClick={() => setSelectedDesign(design)}>
-                                    <img src={design} alt="card design" />
+                        <h3 className="modal-title">Счета и карты</h3>
+                        {userData.accounts.map(acc => (
+                            <div key={acc.id} className="section" style={{padding: '12px', marginBottom: '12px'}}>
+                                <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
+                                    <p style={{fontWeight: 600}}>{acc.name} ({acc.cards.length}/5 карт)</p>
+                                    <button onClick={() => handleAddCard(acc.id)} style={{border: 'none', background: 'var(--background-input)', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer'}}>+ Карта</button>
                                 </div>
-                            ))}
-                        </div>
-                        <button className="modal-button" onClick={addNewAccount}>Создать счет</button>
+                                <div className="grid-selector" style={{marginTop: '12px'}}>
+                                    {cardDesigns.map(design => (
+                                        <div key={design} className={`grid-item ${acc.cardDesignUrl === design ? 'selected' : ''}`} onClick={() => handleSetCardDesign(acc.id, design)}>
+                                            <img src={design} alt="card design" />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ))}
+                         <div style={{display: 'flex', gap: '8px', marginTop: '16px'}}>
+                             <button className="modal-button" onClick={() => handleAddNewAccount(true)}>+ Счет с картой</button>
+                             <button className="modal-button" onClick={() => handleAddNewAccount(false)} style={{backgroundColor: 'var(--text-secondary)'}}>+ Счет без карты</button>
+                         </div>
                     </div>
-
-                    {/* --- Customize Cashback --- */}
+                    
                     <div className="modal-section">
                         <h3 className="modal-title">Настройка бонусов</h3>
                          <button className="modal-button" onClick={changeCashbackIcons} style={{marginBottom: '8px', backgroundColor: '#5856d6'}}>Сменить иконки кэшбэка</button>
                         <button className="modal-button" onClick={changeCashbackColors} style={{backgroundColor: '#5ac8fa'}}>Сменить цвета бонусов</button>
                     </div>
 
-                     {/* --- Favorite Contacts --- */}
-                    <div className="modal-section">
+                     <div className="modal-section">
                         <h3 className="modal-title">Избранные контакты</h3>
-                        <div className="contact-list">
-                            {userData.favoriteContacts.map(contact => (
-                                <div key={contact.id} className="contact-item">
-                                    <div className="contact-item-avatar">{contact.initials}</div>
-                                    <div className="contact-item-info">
-                                        <div className="contact-item-name">{contact.name}</div>
-                                        <div className="contact-item-banks">
-                                            {contact.banks.map(bank => <img key={bank.id} src={bank.logoUrl} alt={bank.name}/>)}
+                        {!isAddingContact ? (
+                            <>
+                                <div className="contact-list">
+                                    {userData.favoriteContacts.map(contact => (
+                                        <div key={contact.id} className="contact-item">
+                                            <div className="contact-item-avatar">{contact.initials}</div>
+                                            <div className="contact-item-info">
+                                                <div className="contact-item-name">{contact.name}</div>
+                                                <div className="contact-item-banks">
+                                                    {contact.banks.map(bank => <img key={bank.id} src={bank.logoUrl} alt={bank.name}/>)}
+                                                </div>
+                                            </div>
                                         </div>
-                                    </div>
+                                    ))}
                                 </div>
-                            ))}
-                        </div>
-                        <button className="modal-button" onClick={addContact} style={{backgroundColor: '#34c759'}}>Добавить контакт</button>
+                                <button className="modal-button" onClick={() => setIsAddingContact(true)} style={{backgroundColor: '#34c759'}}>Добавить контакт</button>
+                            </>
+                        ) : (
+                            <AddContactForm onSave={handleSaveContact} onCancel={() => setIsAddingContact(false)} />
+                        )}
                     </div>
 
                 </div>
