@@ -1,7 +1,7 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import { MainScreen, PaymentsScreen } from './screens.tsx';
-import { BottomNav, PlaceholderScreen, ProfileModal, RubleIcon, ThreeDotsIcon } from './components.tsx';
-import type { TabName, UserData, Bank } from './types.ts';
+import { BottomNav, PlaceholderScreen, ProfileModal } from './components.tsx';
+import type { TabName, UserData, Bank, Account } from './types.ts';
 
 const tabOrder: TabName[] = ['main', 'payments', 'city', 'chat', 'more'];
 
@@ -15,7 +15,7 @@ const initialUserData: UserData = {
     name: 'Артем',
     accounts: [
          { 
-            id: 1, main: true, name: 'Зарплатная', balance: '0 ₽', badge: '129', icon: <RubleIcon />, iconBg: '#4A90E2',
+            id: 1, main: true, name: 'Зарплатная', balance: '0 ₽', badge: '129', iconName: 'ruble', iconBg: '#4A90E2',
             cardDesignUrl: 'https://i.imgur.com/QrZADtb.png',
             cards: [
                 {id: 'c1'}, {id: 'c2'}, {id: 'c3'}, {id: 'c4'}, {id: 'c5'}
@@ -23,14 +23,14 @@ const initialUserData: UserData = {
         },
         { 
             id: 2, main: false, name: 'Переводы', balance: '0 ₽', badge: 'x1', 
-            icon: <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>, 
+            iconName: 'transfers', 
             iconBg: '#4A90E2', 
             cards: [],
             cardDesignUrl: undefined
         },
         { 
             id: 3, main: false, name: 'Сбор на другое', balance: '0 ₽', 
-            icon: <ThreeDotsIcon />, 
+            iconName: 'three-dots', 
             iconBg: '#4A90E2', 
             cards: [],
             cardDesignUrl: undefined

@@ -10,7 +10,7 @@ export interface Account {
   name: string;
   balance: string;
   badge?: string;
-  icon: React.ReactElement;
+  iconName: string;
   iconBg: string;
   cards: Card[];
   cardDesignUrl?: string; // One design for all cards in this account

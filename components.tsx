@@ -69,6 +69,7 @@ export const BetweenAccountsIcon = () => <svg viewBox="0 0 24 24"><path fill="cu
 export const QRIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M9.5,13.5h-4v-4h4V13.5z M8,11.5h-1v1h1V11.5z M13.5,9.5h-4v-4h4V9.5z M12,7.5h-1v1h1V7.5z M18.5,9.5h-4v-4h4V9.5z M17,7.5h-1v1h1V7.5z M18.5,18.5h-4v-4h4V18.5z M17,16.5h-1v1h1V16.5z M4,4v7h7V4H4z M9,9H6V6h3V9z M4,13v7h7v-7H4z M9,18H6v-3h3V18z M13,4v7h7V4H13z M18,9h-3V6h3V9z M13,13v7h7v-7H13z M18,18h-3v-3h3V18z"/></svg>;
 export const RubleIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M13.5 11.5c1.1 0 2-.9 2-2s-.9-2-2-2h-3v4h3zm0 1h-3v2.5H9V18h1.5v1h2v-1H14c1.1 0 2-.9 2-2s-.9-2-2-2zM6 3h9c2.2 0 4 1.8 4 4s-1.8 4-4 4h-2.5v2H14c2.2 0 4 1.8 4 4s-1.8 4-4 4H6v-2h9c1.1 0 2-.9 2-2s-.9-2-2-2h-2.5v-2H9c-1.1 0-2-.9-2-2s.9-2 2-2h2.5V5H6V3z"/></svg>;
 export const ThreeDotsIcon = () => <svg viewBox="0 0 24 24" fill="white"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>;
+export const TransfersIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>;
 export const TinkoffIcon = () => <svg viewBox="0 0 24 24" fill="#FDD900"><path d="M20.9 6.95v-.17c0-1.1-.9-2-2-2h-1.45l-3.37 4.1-.73-4.1h-1.45v10.4h1.94v-6.23l4.13 6.23h1.94V6.95zM4.14 15.18V4.78h7.94v1.44H6.08v3.08h5.2v1.44h-5.2v4.44h-1.94z"/></svg>;
 export const MobileIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/></svg>;
 export const PlusIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>;
@@ -153,6 +154,15 @@ export const CardCarousel: React.FC<{ cards: Card[], designUrl: string, onAction
     </div>
 );
 
+const AccountIconRenderer: React.FC<{ iconName: string }> = ({ iconName }) => {
+    switch(iconName) {
+        case 'ruble': return <RubleIcon />;
+        case 'transfers': return <TransfersIcon />;
+        case 'three-dots': return <ThreeDotsIcon />;
+        default: return null;
+    }
+};
+
 export const AccountCard: React.FC<{ account: Account, isAnimated: boolean, animationIndex: number, onAction: (action: string) => void }> = ({ account, isAnimated, animationIndex, onAction }) => (
     <div 
         className={`account-card ${account.main ? 'main-account' : ''} ${isAnimated ? 'animate-in' : ''}`}
@@ -160,7 +170,7 @@ export const AccountCard: React.FC<{ account: Account, isAnimated: boolean, anim
         onClick={() => onAction(`Открыть счет "${account.name}"`)}
     >
         <div className="account-icon" style={{ backgroundColor: account.iconBg }}>
-            {account.icon}
+            <AccountIconRenderer iconName={account.iconName} />
         </div>
         <div className="account-details">
             <div className="account-info-left">
@@ -277,7 +287,7 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
                 main: false,
                 name: "Новый счет",
                 balance: "0 ₽",
-                icon: <RubleIcon />,
+                iconName: 'ruble',
                 iconBg: '#4A90E2',
                 cards: withCard ? [{ id: `card-${Date.now()}` }] : [],
                 cardDesignUrl: withCard ? cardDesigns[0] : undefined
@@ -303,11 +313,10 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
     const changeCashbackIcons = () => {
         setUserData(prev => ({
             ...prev,
-            cashbackPartners: [
-                {id: '1', logoUrl: cashbackIcons[Math.floor(Math.random()*3)]},
-                {id: '2', logoUrl: cashbackIcons[Math.floor(Math.random()*3)]},
-                {id: '3', logoUrl: cashbackIcons[Math.floor(Math.random()*3)]},
-            ]
+            cashbackPartners: prev.cashbackPartners.map(p => ({
+                ...p,
+                logoUrl: cashbackIcons[Math.floor(Math.random()*cashbackIcons.length)]
+            }))
         }));
         addToast('Иконки кэшбэка изменены!');
     };
