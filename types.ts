@@ -1,4 +1,4 @@
-export type TabName = 'main' | 'payments' | 'city' | 'chat' | 'more';
+export type TabName = 'main' | 'payments' | 'city' | 'chat' | 'more' | 'admin';
 
 export interface Card {
   id: string;
@@ -9,12 +9,13 @@ export interface Card {
 
 export interface Account {
   id: number;
-  main: boolean;
   name: string;
   balance: number; 
+  color: string;
   badge?: {
     text: string;
     color: string;
+    iconUrl?: string;
   };
   iconName: string;
   iconBg: string;
@@ -42,7 +43,7 @@ export interface FavoriteContact {
     banks: Bank[];
 }
 
-export type TransactionCategory = 'food' | 'shopping' | 'transport' | 'health' | 'income';
+export type TransactionCategory = 'food' | 'shopping' | 'transport' | 'health' | 'income' | 'transfer';
 
 export interface Transaction {
   id: string;
@@ -55,13 +56,23 @@ export interface Transaction {
 }
 
 export interface UserData {
+    email: string;
+    frozen: boolean;
     name: string;
     avatarUrl: string;
+    isPremium: boolean;
+    isAdmin: boolean;
+    donationBalance: number;
     accounts: Account[];
     cashbackPartners: CashbackPartner[];
     cashbackProgress: { color: string; percentage: number }[];
     favoriteContacts: FavoriteContact[];
     transactions: Transaction[];
+    customBanks: Bank[];
+    monthlySpending: {
+        month: string;
+        amount: number;
+    };
 }
 
 export interface Toast {
@@ -71,4 +82,14 @@ export interface Toast {
 
 export interface ToastContextType {
   addToast: (message: string) => void;
+}
+
+export interface TransferSuccessDetails {
+    amount: number;
+    fromAccountName: string;
+    balanceBefore: number;
+    balanceAfter: number;
+    recipientName: string;
+    recipientInfo: string; // Phone or card number
+    recipientBank: Bank;
 }

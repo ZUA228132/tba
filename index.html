@@ -47,7 +47,6 @@
       display: flex;
       flex-direction: column;
       position: relative;
-      overflow: hidden;
     }
     main {
       flex-grow: 1;
@@ -56,6 +55,63 @@
       padding-bottom: 90px; /* Space for bottom nav */
       position: relative;
     }
+
+    /* --- Login Screen --- */
+    .login-screen {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100%;
+      padding: 24px;
+      background-color: var(--background-main);
+      animation: fadeIn 0.5s;
+    }
+    .login-screen h1 {
+        font-size: 32px;
+        margin-bottom: 8px;
+    }
+    .login-screen p {
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+    }
+    .login-form {
+        width: 100%;
+        max-width: 320px;
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    .login-error {
+        color: var(--notification-red);
+        text-align: center;
+        font-size: 14px;
+    }
+
+    /* --- Frozen Overlay --- */
+    .frozen-overlay {
+        position: absolute;
+        inset: 0;
+        background-color: var(--background-overlay);
+        z-index: 5000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        text-align: center;
+        color: white;
+        flex-direction: column;
+        animation: fadeIn 0.3s;
+    }
+    .frozen-overlay h2 {
+        font-size: 24px;
+        margin-bottom: 12px;
+    }
+    .frozen-overlay p {
+        font-size: 16px;
+        opacity: 0.8;
+    }
+
 
     /* --- General Header & Search --- */
     .app-header {
@@ -190,13 +246,15 @@
       background-color: var(--background-card); border-radius: var(--border-radius-l);
       padding: 16px; display: flex; align-items: center; gap: 12px;
       transition: transform var(--transition-fast), opacity var(--transition-fast), box-shadow var(--transition-fast);
+      cursor: pointer;
     }
     .account-card:active { transform: scale(0.98); }
     .account-icon {
       width: 40px; height: 40px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .account-icon svg, .account-icon img { width: 24px; height: 24px; }
+    .account-icon svg { width: 24px; height: 24px; }
+    .account-icon img { width: 36px; height: 36px; object-fit: contain; }
     .account-details { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; min-width: 0;}
     .account-name { 
       font-size: 15px; font-weight: 600;
@@ -213,6 +271,15 @@
       color: white;
       font-size: 11px; font-weight: 600; padding: 2px 6px;
       border-radius: 10px; margin-left: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .notification-badge img {
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      object-fit: cover;
     }
     .card-carousel {
         display: flex;
@@ -511,6 +578,82 @@
     .requisites-grid.row-view { grid-template-columns: 1fr 1fr; }
     .requisites-item { background-color: var(--background-input); border-radius: var(--border-radius-m); padding: 12px; font-size: 16px; color: var(--text-primary); font-family: 'Menlo', monospace; }
 
+    /* --- Account Details Modal --- */
+    .account-details-modal-header {
+        padding: 16px;
+        color: white;
+        border-top-left-radius: var(--border-radius-xl);
+        border-top-right-radius: var(--border-radius-xl);
+    }
+    .account-details-modal-header .modal-back-btn { fill: white; }
+    .account-details-name {
+        font-size: 24px;
+        font-weight: 700;
+        margin-top: 16px;
+    }
+    .account-details-balance {
+        font-size: 32px;
+        font-weight: 700;
+        margin-top: 4px;
+    }
+    .account-details-content {
+        background-color: var(--background-main);
+        padding: 16px;
+        transform: translateY(-20px);
+        border-top-left-radius: var(--border-radius-xl);
+        border-top-right-radius: var(--border-radius-xl);
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .account-details-actions-bar {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 16px;
+        padding: 16px;
+        background-color: var(--background-card);
+        border-radius: var(--border-radius-l);
+    }
+    .account-details-action {
+        display: flex; flex-direction: column; align-items: center; gap: 8px;
+        font-size: 13px; font-weight: 500; cursor: pointer;
+    }
+    .account-details-action .icon-wrapper {
+        width: 48px; height: 48px; border-radius: 50%;
+        background-color: var(--accent-blue);
+        display: flex; align-items: center; justify-content: center;
+    }
+    .account-details-action .icon-wrapper svg { width: 24px; height: 24px; fill: white; }
+    .bonus-card { display: flex; flex-direction: column; align-items: flex-start; }
+    .bonus-badge {
+        display: flex; align-items: center; gap: 6px;
+        background-color: #e0e0e0;
+        padding: 6px 10px;
+        border-radius: 16px;
+        font-size: 14px; font-weight: 600;
+    }
+    .bonus-badge svg { width: 16px; height: 16px; }
+    .bonus-info { margin-top: 8px; font-size: 13px; color: var(--text-secondary); }
+    .bonus-offers-section { margin-top: 24px; }
+    .bonus-offers-header { display: flex; justify-content: space-between; align-items: center; }
+    .bonus-offers-header h3 { font-size: 18px; font-weight: 700; }
+    .bonus-offers-header a { color: var(--accent-blue); text-decoration: none; font-weight: 500; }
+    .bonus-offers-grid { display: flex; gap: 12px; margin-top: 12px; overflow-x: auto; padding-bottom: 8px; }
+    .bonus-offer-card {
+        flex: 0 0 140px;
+        padding: 12px;
+        background-color: var(--background-card);
+        border-radius: var(--border-radius-l);
+    }
+    .bonus-offer-card .icon-wrapper {
+        width: 36px; height: 36px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 8px;
+    }
+    .bonus-offer-card .icon-wrapper img, .bonus-offer-card .icon-wrapper svg {
+        width: 24px; height: 24px;
+    }
+    .bonus-offer-card p { font-size: 14px; font-weight: 500; }
+
     /* --- Transfer Modal --- */
     .transfer-carousel { 
       overflow-x: auto;
@@ -529,6 +672,7 @@
         border-radius: var(--border-radius-xl);
         padding: 16px;
         color: white;
+        transition: background-color var(--transition-fast);
     }
     .transfer-account-card p { font-size: 16px; font-weight: 500; opacity: 0.8; }
     .transfer-account-card h3 { font-size: 24px; font-weight: 700; margin-top: 4px; }
@@ -543,7 +687,7 @@
     }
     /* Transfer By Phone Modal */
     .phone-transfer-content { padding: 16px; }
-    .bank-suggestions { display: flex; gap: 12px; }
+    .bank-suggestions { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
     .bank-card {
       padding: 12px;
       border-radius: var(--border-radius-l);
@@ -552,16 +696,106 @@
       cursor: pointer;
       border: 2px solid transparent;
       transition: border-color var(--transition-fast);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      height: 120px;
     }
     .bank-card.selected { border-color: var(--accent-blue); }
     .bank-card-logo {
       width: 32px; height: 32px; border-radius: 50%;
       background-color: rgba(255,255,255,0.8);
-      display: flex; align-items: center; justify-content: center; margin-bottom: 24px;
+      display: flex; align-items: center; justify-content: center;
     }
     .bank-card-logo img { width: 20px; height: 20px; object-fit: contain; }
-    .bank-card-name { font-size: 14px; font-weight: 600; color: white; }
-    .bank-card-user { font-size: 12px; color: white; opacity: 0.8; }
+    .bank-card-logo svg { width: 20px; height: 20px; object-fit: contain; }
+    .bank-card-details { color: white; }
+    .bank-card-name { font-size: 14px; font-weight: 600; }
+    .bank-card-user { font-size: 12px; opacity: 0.8; }
+
+    /* --- Transfer Success Modal --- */
+    .transfer-success-modal {
+        background: #1C1C1E;
+        color: white;
+        text-align: center;
+        padding-top: 60px; /* Space for status bar */
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .transfer-success-header {
+        padding: 16px;
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+    }
+    .transfer-success-content {
+        padding: 16px;
+    }
+    .transfer-success-title {
+        font-size: 16px;
+        opacity: 0.8;
+        margin-bottom: 8px;
+    }
+    .transfer-success-amount {
+        font-size: 40px;
+        font-weight: 700;
+        margin-top: 16px;
+    }
+    .transfer-success-balance-change {
+        font-size: 14px;
+        opacity: 0.6;
+        margin-top: 4px;
+    }
+    .recipient-card {
+        background-color: #2C2C2E;
+        border-radius: var(--border-radius-xl);
+        padding: 24px;
+        margin: 24px auto;
+        width: 100%;
+        max-width: 300px;
+    }
+    .recipient-name {
+        font-size: 20px;
+        font-weight: 600;
+    }
+    .recipient-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        margin: 12px auto;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(255,255,255,0.1);
+    }
+    .recipient-icon img { width: 28px; height: 28px; object-fit: contain; }
+    .recipient-info { font-size: 14px; opacity: 0.8; margin-top: 4px; }
+    .transfer-success-actions {
+        display: flex;
+        justify-content: space-around;
+        padding: 16px;
+    }
+    .transfer-success-action {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        color: white;
+        font-size: 13px;
+        cursor: pointer;
+    }
+    .transfer-success-action .icon-wrapper {
+        width: 48px;
+        height: 48px;
+        background-color: #3A3A3C;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .transfer-success-action svg { width: 24px; height: 24px; fill: white; }
 
     /* --- Bottom Nav --- */
     .bottom-nav {
@@ -571,6 +805,9 @@
       border-top: 1px solid rgba(0,0,0,0.05);
       display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 0;
       z-index: 100;
+    }
+    .bottom-nav.admin-view {
+        grid-template-columns: repeat(6, 1fr);
     }
     .nav-item {
       display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -660,7 +897,8 @@
   "imports": {
     "react": "https://esm.sh/react@^19.1.1",
     "react/": "https://esm.sh/react@^19.1.1/",
-    "react-dom/": "https://esm.sh/react-dom@^19.1.1/"
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/",
+    "firebase/": "https://aistudiocdn.com/firebase@^12.1.0/"
   }
 }
 </script>

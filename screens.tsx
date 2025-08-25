@@ -3,8 +3,31 @@ import { useActionHandler } from './hooks.tsx';
 import type { UserData } from './types.ts';
 import { 
     Header, Stories, InfoCards, QuickActions, AccountCard, PlusIcon,
-    ChatSearchIcon, ChatCreateIcon
+    ChatSearchIcon, ChatCreateIcon, UserEditModal
 } from './components.tsx';
+
+export const LoginScreen: React.FC<{ onLogin: (email: string, pass: string) => void, error: string }> = ({ onLogin, error }) => {
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+
+    const handleSubmit = (e: React.FormEvent) => {
+        e.preventDefault();
+        onLogin(email, password);
+    };
+
+    return (
+        <div className="login-screen">
+            <h1>T-Bank</h1>
+            <p>Войдите в свой аккаунт</p>
+            <form onSubmit={handleSubmit} className="login-form">
+                <input className="modal-input" type="email" placeholder="Email" value={email} onChange={e => setEmail(e.target.value)} required />
+                <input className="modal-input" type="password" placeholder="Пароль" value={password} onChange={e => setPassword(e.target.value)} required />
+                {error && <p className="login-error">{error}</p>}
+                <button type="submit" className="modal-button">Войти</button>
+            </form>
+        </div>
+    );
+};
 
 export const MainScreen: React.FC<{ 
     userData: UserData; 
@@ -16,19 +39,16 @@ export const MainScreen: React.FC<{
 }> = ({ userData, setUserData, onProfileClick, isProfileOpen, onHistoryClick, onAction }) => {
     const handleGenericAction = useActionHandler();
     const [isAnimated, setIsAnimated] = useState(false);
-    const [isRefreshing, setIsRefreshing] = useState(false);
-    const mainRef = useRef<HTMLElement>(null);
     const dragItem = useRef<number | null>(null);
     const dragOverItem = useRef<number | null>(null);
     
     const internalOnAction = (action: string) => {
-        if (action.startsWith('Открыть карту') || action === 'Между счетами' || action === 'Перевести по телефону') {
+        if (action.startsWith('Открыть') || action === 'Между счетами' || action === 'Перевести по телефону') {
             onAction(action);
         } else {
             handleGenericAction(action);
         }
     };
-
 
     const handleSort = () => {
         if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) {
@@ -40,47 +60,36 @@ export const MainScreen: React.FC<{
         accountsCopy.splice(dragOverItem.current, 0, draggedItemContent);
         setUserData(prev => ({ ...prev, accounts: accountsCopy }));
     };
-
-    const triggerAnimation = () => {
-        setIsAnimated(false);
-        setTimeout(() => setIsAnimated(true), 50);
-    };
     
     useEffect(() => {
         const timer = setTimeout(() => setIsAnimated(true), 100);
         return () => clearTimeout(timer);
     }, []);
     
-    const handleRefresh = () => {
-        if (isRefreshing) return;
-        setIsRefreshing(true);
-        setTimeout(() => {
-            triggerAnimation();
-            setIsRefreshing(false);
-        }, 1500);
-    };
-
     return (
         <>
             <Header userData={userData} onProfileClick={onProfileClick} isProfileOpen={isProfileOpen} onAction={internalOnAction} />
-            <main ref={mainRef}>
+            <main>
                 <Stories onAction={internalOnAction} />
-                <InfoCards partners={userData.cashbackPartners} progress={userData.cashbackProgress} onHistoryClick={onHistoryClick} onAction={internalOnAction} />
-                <QuickActions onAction={internalOnAction} />
+                <InfoCards partners={userData.cashbackPartners} progress={userData.cashbackProgress} spending={userData.monthlySpending} onHistoryClick={onHistoryClick} onAction={internalOnAction} />
+                <QuickActions onAction={onAction} />
                 <div className="accounts-list">
                     {userData.accounts.map((acc, index) => (
                          <div
                             key={acc.id}
                             className="account-card-wrapper"
-                            draggable
+                            draggable={userData.isPremium}
                             onDragStart={(e) => {
+                                if (!userData.isPremium) return;
                                 dragItem.current = index;
                                 e.currentTarget.classList.add('dragging');
                             }}
                             onDragEnter={() => {
+                                if (!userData.isPremium) return;
                                 dragOverItem.current = index;
                             }}
                             onDragEnd={(e) => {
+                                if (!userData.isPremium) return;
                                 e.currentTarget.classList.remove('dragging');
                                 handleSort();
                                 dragItem.current = null;
@@ -97,7 +106,7 @@ export const MainScreen: React.FC<{
     );
 };
 
-export const PaymentsScreen = () => {
+export const PaymentsScreen: React.FC<{onAction: (action: string) => void}> = ({ onAction }) => {
     const handleAction = useActionHandler();
     const [isAnimated, setIsAnimated] = useState(false);
 
@@ -106,101 +115,27 @@ export const PaymentsScreen = () => {
         return () => clearTimeout(timer);
     }, []);
 
-    const favorites = [
-        { label: 'Долгосроч. сбережения', icon: <div/> }, { label: 'Ксения К.', icon: <div/> },
-        { label: 'Мобила', icon: <div/> }, { label: 'Добавить', icon: <PlusIcon /> },
-    ];
-    const contacts = [
-        { name: 'Себе', initials: 'С' }, { name: 'Настёна', initials: 'Н' },
-        { name: '+7 980 908', initials: '?' }, { name: 'Андрей Госов', initials: 'АГ' },
-        { name: 'Арт Бори', initials: 'АБ' },
-    ];
-    const transfers = [
-        { label: 'Из другого банка', icon: <div/> }, { label: 'Между счетами', icon: <div/> },
-        { label: 'По номеру карты', icon: <div/> }, { label: 'По договору', icon: <div/> },
-    ];
-    const payments = [
-        { label: 'Мобильная связь', icon: <div/> }, { label: 'ЖКХ', icon: <div/> },
-        { label: 'Госуслуги', icon: <div/> }, { label: 'Погашение кредита', icon: <div/> },
-    ];
-
     return (
         <>
             <header className="payments-header">
                 <h1>Платежи</h1>
                 <div className="search-bar">
-                    {/* <SearchIcon /> */}
                     <input type="text" placeholder="Поиск" onClick={() => handleAction('Поиск по платежам')} />
                 </div>
             </header>
             <main>
-                <section className={`section ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '50ms' }}>
-                    <div className="section-header"><h2 className="section-title">Избранное</h2></div>
-                    <div className="horizontal-scroll">
-                        {favorites.map(fav => (
-                            <a key={fav.label} onClick={() => handleAction(fav.label)} className="favorite-item">
-                                <div className="favorite-icon">{fav.icon}</div>
-                                <span className="favorite-label">{fav.label}</span>
-                            </a>
-                        ))}
-                    </div>
-                </section>
-                <div className={`payment-quick-actions ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '100ms', opacity: 0, animation: 'fadeInUp 0.5s forwards' }}>
-                    <a onClick={() => handleAction('На оплату')} className="payment-action-btn"><div/> На оплату</a>
-                    <a onClick={() => handleAction('Сканировать QR')} className="payment-action-btn"><div/> Сканировать</a>
-                </div>
                 <section className={`section ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '150ms' }}>
-                    <div className="section-header">
-                        <h2 className="section-title">Перевод по телефону</h2>
-                        <a onClick={() => handleAction('Открыть контакты')} className="section-action"><div/></a>
-                    </div>
-                    <div className="phone-transfer-input">
-                        {/* <PhoneIcon /> */}
-                        <input type="text" placeholder="Имя или номер" />
-                    </div>
-                    <div className="horizontal-scroll">
-                        {contacts.map(c => (
-                            <div key={c.name} className="contact-bubble" onClick={() => handleAction(`Перевести для "${c.name}"`)}>
-                                <div className="contact-avatar">{c.initials === '?' ? c.name.slice(0, 1) : c.initials}</div>
-                                <div className="contact-name">{c.name}</div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-                <section className={`section ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '200ms' }}>
                     <div className="section-header">
                         <h2 className="section-title">Переводы</h2>
                         <a onClick={() => handleAction('Все переводы')} className="section-action">Все</a>
                     </div>
                     <div className="service-grid">
-                        {transfers.map(item => (
-                            <div key={item.label} className="service-item" onClick={() => handleAction(item.label)}>
-                                <div className="service-icon">{item.icon}</div>
-                                <span>{item.label}</span>
-                            </div>
-                        ))}
+                        <div className="service-item" onClick={() => onAction('Перевести по телефону')}><div className="service-icon"></div><span>По телефону</span></div>
+                        <div className="service-item" onClick={() => onAction('Между счетами')}><div className="service-icon"></div><span>Между счетами</span></div>
+                        <div className="service-item" onClick={() => onAction('По номеру карты')}><div className="service-icon"></div><span>По номеру карты</span></div>
                     </div>
                 </section>
-                 <section className={`section ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '250ms' }}>
-                    <div className="section-header">
-                        <h2 className="section-title">Платежи</h2>
-                        <a onClick={() => handleAction('Все платежи')} className="section-action">Все</a>
-                    </div>
-                    <div className="service-grid">
-                        {payments.map(item => (
-                            <div key={item.label} className="service-item" onClick={() => handleAction(item.label)}>
-                                <div className="service-icon">{item.icon}</div>
-                                <span>{item.label}</span>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-                <section className={`section single-action-section ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '300ms' }}>
-                     <div className="single-action-btn" onClick={() => handleAction('Запросить деньги')}>
-                        <div className="service-icon"><div/></div>
-                        <span>Запросить деньги</span>
-                    </div>
-                </section>
+                {/* Other sections can be added here */}
             </main>
         </>
     );
@@ -248,4 +183,41 @@ export const ChatScreen = () => {
         </main>
       </>
     );
-  };
+};
+
+export const AdminScreen: React.FC<{users: UserData[], onUserUpdate: (updatedUser: UserData) => void}> = ({ users, onUserUpdate }) => {
+    const [selectedUser, setSelectedUser] = useState<UserData | null>(null);
+
+    return (
+        <>
+            <header className="payments-header">
+                <h1>Админ-панель</h1>
+            </header>
+            <main>
+                <div className="section">
+                    <h2 className="section-title">Пользователи</h2>
+                    <div className="contact-list" style={{marginTop: '16px'}}>
+                        {users.map(user => (
+                            <div key={user.email} className="contact-item" onClick={() => setSelectedUser(user)} style={{cursor: 'pointer'}}>
+                                 <div className="avatar" style={{backgroundImage: `url(${user.avatarUrl})`}}></div>
+                                 <div className="contact-item-info">
+                                    <div className="contact-item-name">{user.name}</div>
+                                    <p style={{fontSize: '12px', color: 'var(--text-secondary)'}}>{user.email}</p>
+                                 </div>
+                                 {user.frozen && <span style={{color: 'var(--notification-red)', fontWeight: '600'}}>FROZEN</span>}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </main>
+            {selectedUser && (
+                <UserEditModal 
+                    isOpen={!!selectedUser}
+                    onClose={() => setSelectedUser(null)}
+                    user={selectedUser}
+                    onSave={onUserUpdate}
+                />
+            )}
+        </>
+    );
+};
