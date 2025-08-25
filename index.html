@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>T-Bank</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --background-main: #F5F5F7;
+      --background-card: #FFFFFF;
+      --background-input: #E6E7E8;
+      --text-primary: #1A1A1A;
+      --text-secondary: #858D97;
+      --text-tertiary: #B8BFC7;
+      --accent-yellow: #FFDD2D;
+      --accent-blue: #4986CC;
+      --notification-red: #FF3B30;
+      --border-radius-xl: 20px;
+      --border-radius-l: 16px;
+      --border-radius-m: 12px;
+      --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-tap-highlight-color: transparent;
+    }
+    html, body {
+      height: 100%;
+      overflow: hidden;
+    }
+    body {
+      font-family: 'Inter', sans-serif;
+      background-color: var(--text-primary);
+      color: var(--text-primary);
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+    #root {
+      width: 100%;
+      height: 100%;
+      max-width: 430px; /* Typical mobile screen width */
+      max-height: 932px; /* Typical mobile screen height */
+      background-color: var(--background-main);
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      border-radius: 32px; /* For a more app-like feel in desktop view */
+      box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    }
+    main {
+      flex-grow: 1;
+      overflow-y: auto;
+      padding: 0 16px;
+      padding-bottom: 90px; /* Space for bottom nav */
+      position: relative;
+    }
+
+    /* --- General Header & Search --- */
+    .app-header {
+      padding: 16px 16px 0 16px;
+      background-color: var(--background-main);
+    }
+    .user-profile {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 16px;
+    }
+    .avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background-color: #e0e0e0;
+      background-image: url('https://i.pravatar.cc/80?u=artem');
+      background-size: cover;
+    }
+    .user-name {
+      font-size: 20px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .user-name svg { width: 24px; height: 24px; opacity: 0.5; }
+    .search-bar {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background-color: var(--background-input);
+      padding: 12px;
+      border-radius: var(--border-radius-l);
+    }
+    .search-bar svg { flex-shrink: 0; }
+    .search-bar input {
+      border: none; background: none; outline: none;
+      font-size: 16px; width: 100%; font-family: 'Inter', sans-serif;
+    }
+    .search-bar input::placeholder { color: var(--text-secondary); }
+
+    /* --- Main Screen Specific --- */
+    .stories-section {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; margin-top: 16px;
+    }
+    .story-card {
+      height: 120px; border-radius: var(--border-radius-l); padding: 12px;
+      color: white; font-weight: 600; font-size: 15px; line-height: 1.2;
+      position: relative; overflow: hidden; display: flex; align-items: flex-end;
+      cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
+    .story-card:active { transform: scale(0.97); }
+    .story-card::after {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.6) 100%);
+    }
+    .story-card span { position: relative; z-index: 1; }
+    .story-card-1 { background: url('https://images.unsplash.com/photo-1540573133985-87b6da6d54a9?q=80&w=2076&auto=format&fit=crop') center/cover; }
+    .story-card-2 { background: url('https://images.unsplash.com/photo-161809084222-22a11b8b7a66?q=80&w=1974&auto=format&fit=crop') center/cover; }
+    .info-cards-section {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 8px; margin-top: 24px;
+    }
+    .info-card {
+      background-color: var(--background-card); border-radius: var(--border-radius-l); padding: 16px;
+      cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
+    .info-card:active { transform: scale(0.97); }
+    .info-card h3 { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+    .info-card .amount { font-size: 13px; color: var(--text-secondary); margin-bottom: 12px; }
+    .progress-bar {
+      height: 6px; border-radius: 3px; background-color: #E6E7E8;
+      overflow: hidden; display: flex;
+    }
+    .progress-bar div { height: 100%; }
+    .bonus-logos { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+    .bonus-logos img { width: 28px; height: 28px; border-radius: 50%; }
+    .quick-actions {
+      display: grid; grid-template-columns: repeat(4, 1fr);
+      gap: 8px; margin-top: 24px;
+    }
+    .action-button {
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      background-color: var(--background-card); border-radius: var(--border-radius-xl); padding: 16px 8px;
+      text-align: center; font-size: 12px; font-weight: 500;
+      color: var(--text-primary); text-decoration: none; cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
+    .action-button:active { transform: scale(0.95); }
+    .action-button .icon-wrapper {
+      width: 48px; height: 48px; border-radius: var(--border-radius-l);
+      display: flex; align-items: center; justify-content: center;
+    }
+    .action-button svg { width: 24px; height: 24px; }
+
+    /* --- Account Cards --- */
+    .accounts-list { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+    .account-card {
+      background-color: var(--background-card); border-radius: var(--border-radius-l);
+      padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer;
+      transition: transform var(--transition-fast);
+    }
+    .account-card:active { transform: scale(0.98); }
+    .account-icon {
+      width: 40px; height: 40px; border-radius: 50%;
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    }
+    .account-icon svg { width: 24px; height: 24px; }
+    .account-details { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; }
+    .account-name { font-size: 15px; font-weight: 600; }
+    .account-balance { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
+    .account-card.main-account .account-details { align-items: flex-start; }
+    .account-info-left { display: flex; flex-direction: column; gap: 12px; }
+    .account-info-right { text-align: right; }
+    .main-account .account-balance { font-size: 16px; font-weight: 600; color: var(--text-primary); }
+    .notification-badge {
+      background-color: var(--notification-red); color: white;
+      font-size: 11px; font-weight: 600; padding: 2px 6px;
+      border-radius: 10px; margin-left: 8px;
+    }
+    .mini-cards { display: flex; }
+    .mini-card {
+      width: 42px; height: 28px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1);
+      display: flex; align-items: flex-end; justify-content: flex-end;
+      padding: 2px 4px; font-size: 8px; font-weight: 600;
+    }
+    .mini-card:not(:first-child) { margin-left: -12px; }
+    .mini-card-yellow { background-color: var(--accent-yellow); color: var(--text-primary); }
+    .mini-card-black { background-color: #333; color: white; }
+
+    /* --- Payments Screen --- */
+    .payments-header { padding: 16px; background-color: var(--background-main); }
+    .payments-header h1 { font-size: 28px; margin-bottom: 16px; }
+    .section { background-color: var(--background-card); border-radius: var(--border-radius-l); padding: 16px; margin-top: 12px; }
+    .section.animate-in {
+        opacity: 0;
+        animation: fadeInUp 0.5s forwards;
+    }
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    .section-title { font-size: 20px; font-weight: 700; }
+    .section-action { font-size: 16px; color: var(--accent-blue); text-decoration: none; font-weight: 500; cursor: pointer; }
+    .horizontal-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; margin: 0 -16px; padding: 0 16px; }
+    .horizontal-scroll::-webkit-scrollbar { display: none; }
+    .favorite-item, .contact-bubble, .service-item, .single-action-btn, .payment-action-btn { 
+      transition: transform var(--transition-fast); 
+      cursor: pointer;
+    }
+    .favorite-item:active, .contact-bubble:active, .service-item:active, .single-action-btn:active, .payment-action-btn:active { transform: scale(0.95); }
+    .favorite-item { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 64px; text-decoration: none; color: var(--text-primary); }
+    .favorite-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #F5F5F7; }
+    .favorite-icon svg { width: 28px; height: 28px; }
+    .favorite-label { font-size: 12px; text-align: center; }
+    .payment-quick-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 24px; }
+    .payment-action-btn { background-color: var(--background-card); border-radius: var(--border-radius-l); padding: 16px; text-decoration: none; color: var(--text-primary); font-weight: 600; display: flex; align-items: center; gap: 8px; }
+    .payment-action-btn svg { width: 24px; height: 24px; }
+    .phone-transfer-input { display: flex; align-items: center; gap: 8px; background-color: var(--background-input); border-radius: var(--border-radius-l); padding: 12px; margin-bottom: 16px; }
+    .phone-transfer-input svg { fill: var(--text-secondary); }
+    .phone-transfer-input input { background: none; border: none; outline: none; font-size: 16px; width: 100%; }
+    .contact-bubble { text-align: center; }
+    .contact-avatar { width: 56px; height: 56px; border-radius: 50%; background-color: #E6E7E8; margin-bottom: 8px; display: flex; align-items: center; justify-content: center; font-size: 20px; font-weight: 600; color: var(--text-secondary); }
+    .contact-name { font-size: 12px; }
+    .service-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .service-item { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 8px; font-size: 12px; }
+    .service-icon { width: 48px; height: 48px; border-radius: var(--border-radius-l); background-color: var(--background-input); display: flex; align-items: center; justify-content: center; }
+    .service-icon svg { width: 24px; height: 24px; }
+    .single-action-section { padding: 0; }
+    .single-action-btn { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 600; padding: 16px; }
+    .single-action-btn .service-icon { background-color: #EBF1FB; }
+
+    /* --- Bottom Nav --- */
+    .bottom-nav {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      height: 80px; background-color: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+      border-top: 1px solid rgba(0,0,0,0.05);
+      display: grid; grid-template-columns: repeat(5, 1fr); padding: 8px 0;
+      z-index: 100;
+    }
+    .nav-item {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      gap: 4px; font-size: 10px; font-weight: 500; color: var(--text-secondary);
+      position: relative; cursor: pointer;
+    }
+    .nav-item.active { color: var(--accent-blue); }
+    .nav-item.active svg { fill: var(--accent-blue); }
+    .nav-item svg { width: 24px; height: 24px; fill: var(--text-secondary); transition: fill 0.2s ease; }
+    .nav-notification {
+      position: absolute; top: 4px; right: 20px;
+      width: 16px; height: 16px; background-color: var(--notification-red);
+      color: white; border-radius: 50%; font-size: 10px; font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      border: 2px solid var(--background-card);
+    }
+
+    /* --- Animation & Transitions --- */
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes fadeInUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    @keyframes slideInRight { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+    @keyframes slideInUp { from { transform: translateY(100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    @keyframes slideOutDown { from { transform: translateY(0); opacity: 1; } to { transform: translateY(100%); opacity: 0; } }
+    @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+    @keyframes slideInFromRight { from { transform: translateX(30%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOutToLeft { from { transform: translateX(0); opacity: 1; } to { transform: translateX(-30%); opacity: 0; } }
+    @keyframes slideInFromLeft { from { transform: translateX(-30%); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
+    @keyframes slideOutToRight { from { transform: translateX(0); opacity: 1; } to { transform: translateX(30%); opacity: 0; } }
+
+    .page-container {
+      flex-grow: 1; display: flex; flex-direction: column;
+      overflow: hidden;
+      animation-duration: 0.35s;
+      animation-timing-function: cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      animation-fill-mode: forwards;
+    }
+    .page-container.slide-in-right { animation-name: slideInFromRight; }
+    .page-container.slide-out-left { animation-name: slideOutToLeft; }
+    .page-container.slide-in-left { animation-name: slideInFromLeft; }
+    .page-container.slide-out-right { animation-name: slideOutToRight; }
+
+    .account-card.animate-in, .mini-card.animate-in { opacity: 0; animation-fill-mode: forwards; }
+    .account-card.animate-in { animation-name: fadeInUp; animation-duration: 0.5s; }
+    .mini-card.animate-in { animation-name: slideInRight; animation-duration: 0.5s; }
+    
+    .pull-to-refresh-indicator {
+      position: absolute; top: 0; left: 0; right: 0;
+      display: flex; justify-content: center;
+      padding: 8px; z-index: -1;
+      opacity: 0;
+      transition: all 0.2s ease;
+    }
+    .pull-to-refresh-indicator svg {
+      width: 24px; height: 24px;
+      color: var(--text-secondary);
+      transition: transform 0.3s ease;
+    }
+    .pull-to-refresh-indicator.refreshing svg { animation: spin 1s linear infinite; }
+
+    /* --- Toast Notifications --- */
+    .toast-container {
+      position: absolute; bottom: 90px; left: 50%;
+      transform: translateX(-50%); z-index: 200;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+      width: calc(100% - 32px); pointer-events: none;
+    }
+    .toast-message {
+      background-color: rgba(26, 26, 26, 0.9); color: white;
+      padding: 10px 20px; border-radius: var(--border-radius-m);
+      font-size: 14px; font-weight: 500;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      animation: slideInUp 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards, slideOutDown 0.3s cubic-bezier(0.55, 0.085, 0.68, 0.53) forwards 2.7s;
+      white-space: pre-wrap; text-align: center;
+      pointer-events: all;
+    }
+  </style>
+<script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@^19.1.1",
+    "react/": "https://esm.sh/react@^19.1.1/",
+    "react-dom/": "https://esm.sh/react-dom@^19.1.1/"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>
