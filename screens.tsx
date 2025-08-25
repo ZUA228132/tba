@@ -2,10 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useActionHandler } from './hooks.tsx';
 import type { UserData } from './types.ts';
 import { 
-    Header, Stories, InfoCards, QuickActions, AccountCard, SearchIcon,
-    TinkoffIcon, MobileIcon, PlusIcon, BillIcon, QRIcon, ArrowRightIcon,
-    PhoneIcon, FromBankIcon, BetweenAccountsIcon, ByCardNumberIcon, ByContractIcon,
-    HousingIcon, GovServicesIcon, CreditIcon, RequestMoneyIcon
+    Header, Stories, InfoCards, QuickActions, AccountCard, PlusIcon,
+    ChatSearchIcon, ChatCreateIcon
 } from './components.tsx';
 
 export const MainScreen: React.FC<{ 
@@ -14,16 +12,23 @@ export const MainScreen: React.FC<{
     onProfileClick: () => void; 
     isProfileOpen: boolean;
     onHistoryClick: () => void;
-}> = ({ userData, setUserData, onProfileClick, isProfileOpen, onHistoryClick }) => {
-    const handleAction = useActionHandler();
+    onAction: (action: string) => void;
+}> = ({ userData, setUserData, onProfileClick, isProfileOpen, onHistoryClick, onAction }) => {
+    const handleGenericAction = useActionHandler();
     const [isAnimated, setIsAnimated] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
-    const touchStartY = useRef(0);
-    const pullDistance = useRef(0);
     const mainRef = useRef<HTMLElement>(null);
-    const indicatorRef = useRef<HTMLDivElement>(null);
     const dragItem = useRef<number | null>(null);
     const dragOverItem = useRef<number | null>(null);
+    
+    const internalOnAction = (action: string) => {
+        if (action.startsWith('Открыть карту') || action === 'Между счетами' || action === 'Перевести по телефону') {
+            onAction(action);
+        } else {
+            handleGenericAction(action);
+        }
+    };
+
 
     const handleSort = () => {
         if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) {
@@ -55,52 +60,13 @@ export const MainScreen: React.FC<{
         }, 1500);
     };
 
-    const handleTouchStart = (e: React.TouchEvent<HTMLElement>) => {
-      if (mainRef.current?.scrollTop === 0) {
-        touchStartY.current = e.targetTouches[0].clientY;
-      }
-    };
-
-    const handleTouchMove = (e: React.TouchEvent<HTMLElement>) => {
-      if (mainRef.current?.scrollTop === 0 && touchStartY.current > 0) {
-        const currentY = e.targetTouches[0].clientY;
-        const distance = currentY - touchStartY.current;
-        if (distance > 0) {
-          e.preventDefault();
-          pullDistance.current = distance;
-          const indicator = indicatorRef.current;
-          if (indicator) {
-            const pullRatio = Math.min(distance / 100, 1);
-            indicator.style.opacity = `${pullRatio}`;
-            indicator.style.transform = `translateY(${Math.min(distance, 60)}px) rotate(${distance * 2}deg)`;
-          }
-        }
-      }
-    };
-
-    const handleTouchEnd = () => {
-      if (pullDistance.current > 80) {
-        handleRefresh();
-      }
-      const indicator = indicatorRef.current;
-      if(indicator) {
-        indicator.style.opacity = '0';
-        indicator.style.transform = `translateY(0px)`;
-      }
-      touchStartY.current = 0;
-      pullDistance.current = 0;
-    };
-
     return (
         <>
-            <Header name={userData.name} onProfileClick={onProfileClick} isProfileOpen={isProfileOpen} onAction={handleAction} />
-            <main ref={mainRef} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
-                <div ref={indicatorRef} className={`pull-to-refresh-indicator ${isRefreshing ? 'refreshing' : ''}`} style={{ opacity: isRefreshing ? 1 : 0, transform: `translateY(${isRefreshing ? '40px' : '0px'})` }}>
-                   {/* <RefreshIcon /> */}
-                </div>
-                <Stories onAction={handleAction} />
-                <InfoCards partners={userData.cashbackPartners} progress={userData.cashbackProgress} onHistoryClick={onHistoryClick} onAction={handleAction} />
-                <QuickActions onAction={handleAction} />
+            <Header userData={userData} onProfileClick={onProfileClick} isProfileOpen={isProfileOpen} onAction={internalOnAction} />
+            <main ref={mainRef}>
+                <Stories onAction={internalOnAction} />
+                <InfoCards partners={userData.cashbackPartners} progress={userData.cashbackProgress} onHistoryClick={onHistoryClick} onAction={internalOnAction} />
+                <QuickActions onAction={internalOnAction} />
                 <div className="accounts-list">
                     {userData.accounts.map((acc, index) => (
                          <div
@@ -122,7 +88,7 @@ export const MainScreen: React.FC<{
                             }}
                             onDragOver={(e) => e.preventDefault()}
                         >
-                            <AccountCard account={acc} isAnimated={isAnimated} animationIndex={index} onAction={handleAction} />
+                            <AccountCard account={acc} isAnimated={isAnimated} animationIndex={index} onAction={internalOnAction} />
                         </div>
                     ))}
                 </div>
@@ -141,8 +107,8 @@ export const PaymentsScreen = () => {
     }, []);
 
     const favorites = [
-        { label: 'Долгосроч. сбережения', icon: <TinkoffIcon /> }, { label: 'Ксения К.', icon: <TinkoffIcon /> },
-        { label: 'Мобила', icon: <MobileIcon /> }, { label: 'Добавить', icon: <PlusIcon /> },
+        { label: 'Долгосроч. сбережения', icon: <div/> }, { label: 'Ксения К.', icon: <div/> },
+        { label: 'Мобила', icon: <div/> }, { label: 'Добавить', icon: <PlusIcon /> },
     ];
     const contacts = [
         { name: 'Себе', initials: 'С' }, { name: 'Настёна', initials: 'Н' },
@@ -150,12 +116,12 @@ export const PaymentsScreen = () => {
         { name: 'Арт Бори', initials: 'АБ' },
     ];
     const transfers = [
-        { label: 'Из другого банка', icon: <FromBankIcon /> }, { label: 'Между счетами', icon: <BetweenAccountsIcon /> },
-        { label: 'По номеру карты', icon: <ByCardNumberIcon /> }, { label: 'По договору', icon: <ByContractIcon /> },
+        { label: 'Из другого банка', icon: <div/> }, { label: 'Между счетами', icon: <div/> },
+        { label: 'По номеру карты', icon: <div/> }, { label: 'По договору', icon: <div/> },
     ];
     const payments = [
-        { label: 'Мобильная связь', icon: <MobileIcon /> }, { label: 'ЖКХ', icon: <HousingIcon /> },
-        { label: 'Госуслуги', icon: <GovServicesIcon /> }, { label: 'Погашение кредита', icon: <CreditIcon /> },
+        { label: 'Мобильная связь', icon: <div/> }, { label: 'ЖКХ', icon: <div/> },
+        { label: 'Госуслуги', icon: <div/> }, { label: 'Погашение кредита', icon: <div/> },
     ];
 
     return (
@@ -163,7 +129,7 @@ export const PaymentsScreen = () => {
             <header className="payments-header">
                 <h1>Платежи</h1>
                 <div className="search-bar">
-                    <SearchIcon />
+                    {/* <SearchIcon /> */}
                     <input type="text" placeholder="Поиск" onClick={() => handleAction('Поиск по платежам')} />
                 </div>
             </header>
@@ -180,16 +146,16 @@ export const PaymentsScreen = () => {
                     </div>
                 </section>
                 <div className={`payment-quick-actions ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '100ms', opacity: 0, animation: 'fadeInUp 0.5s forwards' }}>
-                    <a onClick={() => handleAction('На оплату')} className="payment-action-btn"><BillIcon /> На оплату</a>
-                    <a onClick={() => handleAction('Сканировать QR')} className="payment-action-btn"><QRIcon /> Сканировать</a>
+                    <a onClick={() => handleAction('На оплату')} className="payment-action-btn"><div/> На оплату</a>
+                    <a onClick={() => handleAction('Сканировать QR')} className="payment-action-btn"><div/> Сканировать</a>
                 </div>
                 <section className={`section ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '150ms' }}>
                     <div className="section-header">
                         <h2 className="section-title">Перевод по телефону</h2>
-                        <a onClick={() => handleAction('Открыть контакты')} className="section-action"><ArrowRightIcon /></a>
+                        <a onClick={() => handleAction('Открыть контакты')} className="section-action"><div/></a>
                     </div>
                     <div className="phone-transfer-input">
-                        <PhoneIcon />
+                        {/* <PhoneIcon /> */}
                         <input type="text" placeholder="Имя или номер" />
                     </div>
                     <div className="horizontal-scroll">
@@ -231,7 +197,7 @@ export const PaymentsScreen = () => {
                 </section>
                 <section className={`section single-action-section ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: '300ms' }}>
                      <div className="single-action-btn" onClick={() => handleAction('Запросить деньги')}>
-                        <div className="service-icon"><RequestMoneyIcon /></div>
+                        <div className="service-icon"><div/></div>
                         <span>Запросить деньги</span>
                     </div>
                 </section>
@@ -239,3 +205,47 @@ export const PaymentsScreen = () => {
         </>
     );
 };
+
+export const ChatScreen = () => {
+    const handleAction = useActionHandler();
+    const chatData = [
+      { id: 1, avatarUrl: 'https://i.imgur.com/your_image_url.png', title: 'Сегодня в Городе', message: 'Не прощаемся с летом Приходите танцевать', time: 'СБ', unread: 1, icon: <svg viewBox="0 0 24 24"><path fill="#FBC02D" d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg>, iconBg: '#FFF9C4' },
+      { id: 2, avatarUrl: 'https://i.imgur.com/your_image_url.png', title: 'Поддержка', message: 'Здравствуйте Фото заявления', time: 'ПТ', unread: 1, icon: <svg width="28" height="28" viewBox="0 0 28 28" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M0 8C0 3.58172 3.58172 0 8 0H20C24.4183 0 28 3.58172 28 8V20C28 24.4183 24.4183 28 20 28H8C3.58172 28 0 24.4183 0 20V8Z" fill="#FFDD2D"/><path d="M7 14H21V16H7V14Z" fill="#000"/></svg>, iconBg: '#FFDD2D' },
+      { id: 3, avatarUrl: 'https://i.imgur.com/your_image_url.png', title: 'Деньги на важное', message: 'Ваша заявка на кредитку не была одобрена. К со...', time: '18.08', unread: 0, icon: <svg viewBox="0 0 24 24"><path fill="#E57373" d="M20 6h-4V4c0-1.1-.9-2-2-2h-4c-1.1 0-2 .9-2 2v2H4c-1.1 0-2 .9-2 2v11c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zM10 4h4v2h-4V4z"/></svg>, iconBg: '#FFCDD2' },
+      { id: 4, avatarUrl: 'https://i.imgur.com/9Kkz2aN.png', title: 'Выгода от Т-Банка', message: 'Готовимся к школе 📚 Собрали подборку с кэшб...', time: '14.08', unread: 0 },
+      { id: 5, avatarUrl: 'https://i.imgur.com/4S0At8P.png', title: 'T-Pay', message: 'Ко Дню огурца выпустили стикер Т-Рау — в фор...', time: '10.08', unread: 0 },
+      { id: 6, avatarUrl: 'https://i.imgur.com/Kknun7o.png', title: 'Питерский выходной', message: '🖼️ В музей за счет Т-Банка', time: '22.07', unread: 0 },
+      { id: 7, avatarUrl: 'https://i.imgur.com/1B9aPBh.png', title: '5 букв', message: 'Новый розыгрыш в «5 буквах» Награды по-летне...', time: '19.07', unread: 0 },
+    ];
+  
+    return (
+      <>
+        <header className="chat-header">
+          <h1>Чат</h1>
+          <div className="chat-header-actions">
+              <button onClick={() => handleAction('Поиск по чатам')}><ChatSearchIcon /></button>
+              <button onClick={() => handleAction('Создать чат')}><ChatCreateIcon /></button>
+          </div>
+        </header>
+        <main style={{padding: '0'}}>
+          <div className="chat-list section">
+            {chatData.map(chat => (
+              <div key={chat.id} className="chat-item" onClick={() => handleAction(`Открыть чат: ${chat.title}`)}>
+                <div className="chat-avatar" style={{ backgroundColor: chat.iconBg }}>
+                  {chat.icon ? chat.icon : <img src={chat.avatarUrl} alt={chat.title}/> }
+                </div>
+                <div className="chat-content">
+                  <div className="chat-title">{chat.title}</div>
+                  <div className="chat-message">{chat.message}</div>
+                </div>
+                <div className="chat-info">
+                  <div className="chat-time">{chat.time}</div>
+                  {chat.unread > 0 && <div className="chat-unread-badge">{chat.unread}</div>}
+                </div>
+              </div>
+            ))}
+          </div>
+        </main>
+      </>
+    );
+  };

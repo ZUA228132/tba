@@ -1,6 +1,15 @@
 import React, { useEffect, useContext, createContext, useState, useRef } from 'react';
 import type { Toast, ToastContextType, TabName, UserData, Card, Account, CashbackPartner, FavoriteContact, Bank, Transaction, TransactionCategory } from './types.ts';
 
+// --- UTILS ---
+const formatContactName = (fullName: string): string => {
+    const parts = fullName.trim().split(/\s+/);
+    if (parts.length > 1) {
+        return `${parts[0]} ${parts[1][0]}.`;
+    }
+    return fullName;
+};
+
 // --- DATA ---
 const cardDesigns = [
     'https://i.imgur.com/P8Cp1y6.jpeg', // Airlanes
@@ -13,13 +22,13 @@ const cashbackIcons = [
     'https://i.imgur.com/EzmYEEI.png',
     'https://i.imgur.com/bGshFAV.png'
 ];
-const allBanks: Bank[] = [
-    { id: 't-bank', name: 'Т-Банк', logoUrl: 'https://336118.selcdn.ru/Gutsy-Culebra/products/T-Bank-Seller-Logo.png' },
-    { id: 'sber', name: 'Сбер', logoUrl: 'https://i.imgur.com/ZXP1II7.jpeg' },
-    { id: 'vtb', name: 'ВТБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/VTB_Logo_2018.svg/1200px-VTB_Logo_2018.png' },
-    { id: 'psb', name: 'ПСБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/ru/2/21/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%9F%D0%A1%D0%91.png' },
-    { id: 'alfa', name: 'Альфа-Банк', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_alfa-bank.svg/2422px-Logo_alfa-bank.png' },
-    { id: 'raif', name: 'Райффайзен', logoUrl: 'https://cdn.worldvectorlogo.com/logos/raiffeisen-1.svg' },
+export const allBanks: Bank[] = [
+    { id: 't-bank', name: 'Т-Банк', logoUrl: 'https://336118.selcdn.ru/Gutsy-Culebra/products/T-Bank-Seller-Logo.png', gradient: 'linear-gradient(135deg, #FFDD2D 0%, #F5C62C 100%)' },
+    { id: 'sber', name: 'Сбербанк', logoUrl: 'https://i.imgur.com/ZXP1II7.jpeg', gradient: 'linear-gradient(135deg, #22A04E 0%, #1A7E3E 100%)' },
+    { id: 'alfa', name: 'Альфа-Банк', logoUrl: 'https://i.imgur.com/bSgAAx7.png', gradient: 'linear-gradient(135deg, #EF3124 0%, #D71921 100%)' },
+    { id: 'yandex', name: 'Яндекс Банк', logoUrl: 'https://i.imgur.com/tKjl6rH.png', gradient: 'linear-gradient(135deg, #f9e154 0%, #f6c045 100%)' },
+    { id: 'youmoney', name: 'ЮMoney', logoUrl: 'https://play-lh.googleusercontent.com/9nfp-5pj5fsdt2j2v6x2peq5j_L3M55ckL4SGq5s9D3-86GRtKk20_1G52Lbt75p2uM', gradient: 'linear-gradient(135deg, #9B59B6 0%, #8E44AD 100%)' },
+    { id: 'other', name: 'Другой банк', logoUrl: 'https://w7.pngwing.com/pngs/904/418/png-transparent-computer-icons-bank-finance-bank-angle-building-text.png', gradient: 'linear-gradient(135deg, #E0E0E0 0%, #BDBDBD 100%)' },
 ];
 
 
@@ -64,31 +73,25 @@ const ToastContainer: React.FC<{ toasts: Toast[], removeToast: (id: number) => v
 export const SearchIcon = () => <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M13.294 14.706a8 8 0 111.414-1.414l4.99 5a1 1 0 01-1.414 1.414l-4.99-5zM10 16a6 6 0 100-12 6 6 0 000 12z" fill="#858D97"/></svg>;
 export const ChevronDownIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
 export const PlusIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>;
-export const BetweenAccountsIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M14.6,8.8L12,6.2L9.4,8.8l-1.4-1.4l4-4l4,4L14.6,8.8z M9.4,15.2L12,17.8l2.6-2.6l1.4,1.4l-4,4l-4-4L9.4,15.2z"/></svg>;
-export const QRIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M9.5,13.5h-4v-4h4V13.5z M8,11.5h-1v1h1V11.5z M13.5,9.5h-4v-4h4V9.5z M12,7.5h-1v1h1V7.5z M18.5,9.5h-4v-4h4V9.5z M17,7.5h-1v1h1V7.5z M18.5,18.5h-4v-4h4V18.5z M17,16.5h-1v1h1V16.5z M4,4v7h7V4H4z M9,9H6V6h3V9z M4,13v7h7v-7H4z M9,18H6v-3h3V18z M13,4v7h7V4H13z M18,9h-3V6h3V9z M13,13v7h7v-7H13z M18,18h-3v-3h3V18z"/></svg>;
-export const RubleIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M11.5 5h-2v6H8v2h1.5v2H8v2h1.5v3h2v-3H14v-2h-2.5v-2H14a3 3 0 0 0 0-6h-2.5zm0 2h2.5a1 1 0 0 1 0 2H11.5z"/></svg>;
+const RubleIconWhite = () => <svg width="24" height="24" viewBox="0 0 512 512" fill="white" xmlns="http://www.w3.org/2000/svg"><path d="M384 32H224c-53.02 0-96 42.98-96 96v32h-32c-17.67 0-32 14.33-32 32s14.33 32 32 32h32v64h-32c-17.67 0-32 14.33-32 32s14.33 32 32 32h32v128h64V352h48c53.02 0 96-42.98 96-96s-42.98-96-96-96h-48V128c0-17.64 14.36-32 32-32h96c17.67 0 32-14.33 32-32S401.7 32 384 32zM288 160v64h-64v-64H288z"/></svg>;
 export const ThreeDotsIcon = () => <svg viewBox="0 0 24 24" fill="white"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>;
-export const TransfersIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>;
-export const TinkoffIcon = () => <svg viewBox="0 0 24 24" fill="#FDD900"><path d="M20.9 6.95v-.17c0-1.1-.9-2-2-2h-1.45l-3.37 4.1-.73-4.1h-1.45v10.4h1.94v-6.23l4.13 6.23h1.94V6.95zM4.14 15.18V4.78h7.94v1.44H6.08v3.08h5.2v1.44h-5.2v4.44h-1.94z"/></svg>;
-export const MobileIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/></svg>;
-export const BillIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 12H9v-2h2v2zm0-4H9V9h2v2zm0-4H9V5h2v2zm4 8h-2v-2h2v2zm0-4h-2V9h2v2zm0-4h-2V5h2v2zm4 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg>;
-export const PhoneIcon = () => <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.02.74-.25 1.02l-2.2 2.2z"></path></svg>;
-export const ArrowRightIcon = () => <svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v10z"></path></svg>;
-export const FromBankIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L2 7v2h20V7L12 2zM6 10v7h3v-7H6zm5 0v7h3v-7h-3zm5 0v7h3v-7h-3zM2 22h20v-2H2v2z"/></svg>;
-export const ByCardNumberIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 4H4c-1.11 0-1.99.89-1.99 2L2 18c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V6c0-1.11-.89-2-2-2zm0 14H4v-6h16v6zm0-10H4V6h16v2z"/></svg>;
-export const ByContractIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>;
-export const HousingIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>;
-export const GovServicesIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 7.27l5.22 3.32v6.98l-5.22 3.32-5.22-3.32V10.59l5.22-3.32M12 2L3 8v8l9 6 9-6V8l-9-6z"/></svg>;
-export const CreditIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 13v8h8v-8h-8zM3 21h8v-8H3v8zM3 3v8h8V3H3zm13.66-1.31L11 7.34 16.66 13l5.66-5.66-5.66-5.65z"/></svg>;
-export const RequestMoneyIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>;
-export const RefreshIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"></path></svg>;
+export const TransfersIcon = () => <svg viewBox="0 0 24 24" fill="white"><path d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>;
+export const BackIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"></path></svg>;
 const TrashIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>;
-// Transaction Icons
+const BlockIcon = () => <svg viewBox="0 0 24 24"><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"></path></svg>;
+const ReissueIcon = () => <svg viewBox="0 0 24 24"><path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26L6.7 14.8c-.45-.83-.7-1.79-.7-2.8 0-3.31 2.69-6 6-6zm6.76 1.74L17.3 9.2c.44.84.7 1.79.7 2.8 0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"></path></svg>;
+const FreezeIcon = () => <svg viewBox="0 0 24 24"><path d="M19 5h-2V4c0-1.1-.9-2-2-2h-6c-1.1 0-2 .9-2 2v1H5c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V7c0-1.1-.9-2-2-2zM9 4h6v1H9V4zm5.5 11.5L12 13.72 9.5 15.5l.96-2.88L8 10.41l2.9-.25L12 7.5l1.1 2.66 2.9.25-2.46 2.21L14.5 15.5z"></path></svg>;
 const FoodIcon = () => <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>;
 const ShoppingIcon = () => <svg viewBox="0 0 24 24"><path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h12v12z"/></svg>;
 const TransportIcon = () => <svg viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.02-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.2c.28-.28.36-.67.25-1.02C8.2 6.45 8 5.25 8 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/></svg>;
 const HealthIcon = () => <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H6v-3h12v3zm0-5H6V8h12v6z"/></svg>;
 const IncomeIcon = () => <svg viewBox="0 0 24 24"><path d="M7 14l5-5 5 5H7z"/></svg>;
+export const TopUpIcon = () => <svg color="#4986CC" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" focusable="false"><defs><linearGradient id="dsId_J2L57baxsI0_linear_1525_512" x1="5" y1="5" x2="19" y2="19" gradientUnits="userSpaceOnUse"><stop stop-opacity=".95" stop-color="currentColor"></stop><stop offset="1" stop-opacity=".65" stop-color="currentColor"></stop></linearGradient></defs><path fill-rule="evenodd" clip-rule="evenodd" d="M12 23c6.075 0 11-4.925 11-11S18.075 1 12 1 1 5.925 1 12s4.925 11 11 11Zm5.514-10.5a1 1 0 0 1-1 1h-3v4h-2a1 1 0 0 1-1-1v-3h-4v-2a1 1 0 0 1 1-1h3v-4h2a1 1 0 0 1 1 1v3h4v2Z" fill="url(#dsId_J2L57baxsI0_linear_1525_512)"></path></svg>;
+export const NewBetweenAccountsIcon = () => <svg color="#4986CC" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" focusable="false"><defs><linearGradient id="dsId_4ogCu8R6HB0_linear_1524_1496" x1="21" y1="15.5" x2="6.263" y2="15.5" gradientUnits="userSpaceOnUse"><stop stop-opacity=".5" stop-color="currentColor"></stop><stop offset="1" stop-opacity=".4" stop-color="currentColor"></stop></linearGradient></defs><path opacity=".95" fill-rule="evenodd" clip-rule="evenodd" d="M15 5V0l9 8.5-9 8.5v-5H9V7l-4.13 3.9A4.99 4.99 0 0 1 3 7V5h12Z" fill="currentColor"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M9 19v5l-9-8.5L9 7v5h6v5l4.13-3.9A4.99 4.99 0 0 1 21 17v2H9Z" fill="url(#dsId_4ogCu8R6HB0_linear_1524_1496)"></path></svg>;
+export const NewQRIcon = () => <svg color="#4986CC" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" focusable="false"><path fill-rule="evenodd" clip-rule="evenodd" d="M1 1h5v.5C6 2.3 5.3 3 4.5 3H3v1c0 .8-.7 1.5-1.5 1.5H1V1ZM1 23h5v-.5c0-.8-.7-1.5-1.5-1.5H3v-1c0-.8-.7-1.5-1.5-1.5H1V23ZM23 1h-5v.5c0 .8.7 1.5 1.5 1.5H21v1c0 .8.7 1.5 1.5 1.5h.5V1ZM23 23h-5v-.5c0-.8.7-1.5 1.5-1.5H21v-1c0-.8.7-1.5-1.5-1.5h.5V23ZM13.4 13.4V5H5v8.4h8.4Zm-2.1-2.1V7.1H7.1v4.2h4.2Z" fill="currentColor"></path><path d="M9.97 8.43v1.54H8.43V8.43h1.54Z" fill="currentColor"></path><path opacity=".85" fill-rule="evenodd" clip-rule="evenodd" d="M15.5 5H19V11.3h-3.5V9.2h1.75V7.1H15.5V5ZM5 19h2.1v-1.75h2.1V19h2.1v-3.5H5V19Z" fill="currentColor" fill-opacity=".9"></path><path fill-rule="evenodd" clip-rule="evenodd" d="M19 19v-5.6h-5.6V19H19Zm-1.96-1.96v-1.68h-1.68v1.68h1.68Z" fill="currentColor"></path></svg>;
+export const ChatSearchIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>;
+export const ChatCreateIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34a.996.996 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>;
+
 
 const TransactionIcon: React.FC<{ category: TransactionCategory }> = ({ category }) => {
     switch (category) {
@@ -103,11 +106,11 @@ const TransactionIcon: React.FC<{ category: TransactionCategory }> = ({ category
 
 
 // --- UI COMPONENTS ---
-export const Header: React.FC<{ name: string; onProfileClick: () => void; isProfileOpen: boolean; onAction: (action: string) => void }> = ({ name, onProfileClick, isProfileOpen, onAction }) => (
+export const Header: React.FC<{ userData: UserData; onProfileClick: () => void; isProfileOpen: boolean; onAction: (action: string) => void }> = ({ userData, onProfileClick, isProfileOpen, onAction }) => (
     <header className="app-header">
       <div className="user-profile" onClick={onProfileClick}>
-        <div className="avatar"></div>
-        <div className={`user-name ${isProfileOpen ? 'open' : ''}`}>{name} <ChevronDownIcon /></div>
+        <div className="avatar" style={{ backgroundImage: `url(${userData.avatarUrl})` }}></div>
+        <div className={`user-name ${isProfileOpen ? 'open' : ''}`}>{userData.name} <ChevronDownIcon /></div>
       </div>
       <div className="search-bar">
         <SearchIcon />
@@ -144,9 +147,9 @@ export const InfoCards: React.FC<{ partners: CashbackPartner[], progress: { colo
 export const QuickActions: React.FC<{ onAction: (action: string) => void }> = ({ onAction }) => {
     const actions = [
         { label: 'Перевести по телефону', icon: <img src="https://i.imgur.com/29F5tp2.png" alt="transfer"/>, className: 'action-button-transfer' },
-        { label: 'Пополнить Зарплатная', icon: <PlusIcon /> },
-        { label: 'Между счетами', icon: <BetweenAccountsIcon /> },
-        { label: 'Сканировать QR-код', icon: <QRIcon /> },
+        { label: 'Пополнить', icon: <TopUpIcon /> },
+        { label: 'Между счетами', icon: <NewBetweenAccountsIcon /> },
+        { label: 'Сканировать QR-код', icon: <NewQRIcon /> },
     ];
     return (
         <section className="quick-actions">
@@ -160,22 +163,25 @@ export const QuickActions: React.FC<{ onAction: (action: string) => void }> = ({
     );
 };
 
-export const CardCarousel: React.FC<{ cards: Card[], designUrl: string, onAction: (action: string) => void }> = ({ cards, designUrl, onAction }) => (
+export const CardCarousel: React.FC<{ account: Account, onAction: (action: string) => void }> = ({ account, onAction }) => (
     <div className="card-carousel">
-        {cards.map(card => (
-            <div key={card.id} className="card-carousel-item" onClick={() => onAction(`Открыть карту ${card.id}`)}>
-                <img src={designUrl} alt="Bank Card" />
+        {account.cards.map(card => (
+            <div key={card.id} className="card-carousel-item" onClick={() => onAction(`Открыть карту ${account.id}/${card.id}`)}>
+                <img src={account.cardDesignUrl!} alt="Bank Card" />
             </div>
         ))}
     </div>
 );
 
 const AccountIconRenderer: React.FC<{ iconName: string }> = ({ iconName }) => {
+    if (iconName.startsWith('http')) {
+        return <img src={iconName} alt="account icon"/>;
+    }
     switch(iconName) {
-        case 'ruble': return <RubleIcon />;
+        case 'ruble': return <RubleIconWhite />;
         case 'transfers': return <TransfersIcon />;
         case 'three-dots': return <ThreeDotsIcon />;
-        default: return null;
+        default: return <RubleIconWhite />;
     }
 };
 
@@ -192,12 +198,12 @@ export const AccountCard: React.FC<{ account: Account, isAnimated: boolean, anim
             <div className="account-info-left">
                 <span className="account-name">{account.name}</span>
                 {account.main && account.cards.length > 0 && account.cardDesignUrl &&
-                    <CardCarousel cards={account.cards} designUrl={account.cardDesignUrl} onAction={onAction} />
+                    <CardCarousel account={account} onAction={onAction} />
                 }
             </div>
              <div className="account-info-right">
-                <span className="account-balance">{account.balance}</span>
-                {account.badge && <span className="notification-badge">{account.badge}</span>}
+                <span className="account-balance">{account.balance.toLocaleString('ru-RU')} ₽</span>
+                {account.badge && <span className="notification-badge" style={{ backgroundColor: account.badge.color }}>{account.badge.text}</span>}
             </div>
         </div>
     </div>
@@ -246,27 +252,46 @@ const AddContactForm: React.FC<{ onSave: (contact: Omit<FavoriteContact, 'id' | 
 
 export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, userData: UserData, setUserData: React.Dispatch<React.SetStateAction<UserData>> }> = ({ isOpen, onClose, userData, setUserData }) => {
     const [tempName, setTempName] = useState(userData.name);
+    const [tempAvatarUrl, setTempAvatarUrl] = useState(userData.avatarUrl);
     const addToast = useToast();
-    const modalRef = useRef<HTMLDivElement>(null);
     const [isAddingContact, setIsAddingContact] = useState(false);
+    const mainAccount = userData.accounts.find(a => a.main);
 
     useEffect(() => {
-        setTempName(userData.name);
-        if (!isOpen) {
-            setIsAddingContact(false); // Reset form state on close
+        if (isOpen) {
+            setTempName(userData.name);
+            setTempAvatarUrl(userData.avatarUrl);
+            setIsAddingContact(false);
         }
-    }, [userData.name, isOpen]);
+    }, [userData, isOpen]);
 
-    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setTempName(e.target.value);
+    const handleSaveProfile = () => {
+        setUserData(prev => ({ 
+            ...prev, 
+            name: tempName.trim(),
+            avatarUrl: tempAvatarUrl.trim()
+        }));
+        addToast('Профиль обновлен!');
     };
-
-    const saveName = () => {
-        if (tempName.trim() !== userData.name) {
-            setUserData(prev => ({ ...prev, name: tempName.trim() }));
-            addToast('Имя обновлено!');
-        }
+    
+    const handleAccountNameChange = (accountId: number, newName: string) => {
+        setUserData(prev => ({
+            ...prev,
+            accounts: prev.accounts.map(acc => acc.id === accountId ? {...acc, name: newName} : acc)
+        }));
     };
+    
+    const handleBadgeChange = (field: 'text' | 'color', value: string) => {
+        setUserData(prev => ({
+            ...prev,
+            accounts: prev.accounts.map(acc => {
+                if (acc.main && acc.badge) {
+                    return {...acc, badge: {...acc.badge, [field]: value}};
+                }
+                return acc;
+            })
+        }));
+    }
 
     const handleSetCardDesign = (accountId: number, designUrl: string) => {
         setUserData(prev => ({
@@ -277,36 +302,57 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
 
     const handleAddCard = (accountId: number) => {
         setUserData(prev => {
+            const accountToAddCard = prev.accounts.find(a => a.id === accountId);
+            if (!accountToAddCard) return prev;
+    
+            if (accountToAddCard.cards.length >= 5) {
+                addToast('Достигнут лимит карт для этого счета');
+                return prev;
+            }
+    
+            const designUrl = accountToAddCard.cardDesignUrl || cardDesigns[0]; 
+    
+            const newCardNumber = '2200 ' + Array.from({ length: 3 }, () => Math.floor(1000 + Math.random() * 9000)).join(' ');
+            const newExpiry = `${String(Math.floor(1 + Math.random() * 12)).padStart(2, '0')}/${new Date().getFullYear() % 100 + Math.floor(2 + Math.random() * 4)}`;
+            const newCvc = String(Math.floor(100 + Math.random() * 900));
+    
+            const newCard: Card = {
+                 id: `card-${Date.now()}`,
+                 number: newCardNumber,
+                 expiry: newExpiry,
+                 cvc: newCvc
+            };
+    
             const newAccounts = prev.accounts.map(acc => {
                 if (acc.id === accountId) {
-                    if (!acc.cardDesignUrl) {
-                        addToast('Сначала выберите дизайн для счета');
-                        return acc;
-                    }
-                    if (acc.cards.length >= 5) {
-                        addToast('Достигнут лимит карт для этого счета');
-                        return acc;
-                    }
-                    addToast('Карта добавлена');
-                    return { ...acc, cards: [...acc.cards, { id: `card-${Date.now()}` }] };
+                    return { ...acc, cardDesignUrl: designUrl, cards: [...acc.cards, newCard] };
                 }
                 return acc;
             });
+    
+            addToast('Карта добавлена');
             return { ...prev, accounts: newAccounts };
         });
     };
     
     const handleAddNewAccount = (withCard: boolean) => {
         setUserData(prev => {
+            const isFirstAccount = prev.accounts.length === 0;
             const newAccount: Account = {
                 id: Date.now(),
-                main: false,
+                main: isFirstAccount,
                 name: "Новый счет",
-                balance: "0 ₽",
-                iconName: 'ruble',
-                iconBg: '#4A90E2',
-                cards: withCard ? [{ id: `card-${Date.now()}` }] : [],
-                cardDesignUrl: withCard ? cardDesigns[0] : undefined
+                balance: 0,
+                iconName: 'https://i.imgur.com/8GH7ApO.png',
+                iconBg: '#4986CC',
+                cards: withCard ? [{
+                    id: `card-${Date.now()}`,
+                    number: '2200 ' + Array.from({ length: 3 }, () => Math.floor(1000 + Math.random() * 9000)).join(' '),
+                    expiry: `${String(Math.floor(1 + Math.random() * 12)).padStart(2, '0')}/${new Date().getFullYear() % 100 + 3}`,
+                    cvc: String(Math.floor(100 + Math.random() * 900))
+                }] : [],
+                cardDesignUrl: withCard ? cardDesigns[0] : undefined,
+                ...(isFirstAccount && { badge: { text: '129', color: '#FF3B30' } })
             };
             return { ...prev, accounts: [...prev.accounts, newAccount] };
         });
@@ -334,54 +380,55 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
         addToast('Контакт удален');
     };
 
-    const changeCashbackIcons = () => {
-        const shuffledIcons = [...cashbackIcons].sort(() => 0.5 - Math.random());
-        setUserData(prev => ({
-            ...prev,
-            cashbackPartners: prev.cashbackPartners.map((p, i) => ({
-                ...p,
-                logoUrl: shuffledIcons[i % shuffledIcons.length]
-            }))
-        }));
-        addToast('Иконки кэшбэка изменены!');
-    };
-
-    const changeCashbackColors = () => {
-        const colors = ["#8E44AD", "#3498DB", "#F1C40F", "#E74C3C", "#2ECC71", "#E67E22"];
-        const shuffledColors = [...colors].sort(() => 0.5 - Math.random());
-        setUserData(prev => ({
-             ...prev, 
-             cashbackProgress: prev.cashbackProgress.map((p, i) => ({
-                ...p,
-                color: shuffledColors[i % shuffledColors.length]
-             }))
-        }));
-        addToast('Цвета бонусов изменены!');
-    }
-
     if (!isOpen) return null;
 
     return (
         <>
             <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}></div>
-            <div ref={modalRef} className={`modal-container ${isOpen ? 'open' : ''}`}>
+            <div className={`modal-container ${isOpen ? 'open' : ''}`}>
                 <div className="modal-handle"></div>
                 <div className="modal-content">
                     <div className="modal-section">
                         <h3 className="modal-title">Профиль</h3>
                         <div className="input-group">
                             <label htmlFor="userName">Ваше имя</label>
-                            <input id="userName" type="text" value={tempName} onChange={handleNameChange} onBlur={saveName} />
+                            <input id="userName" type="text" value={tempName} onChange={e => setTempName(e.target.value)} onBlur={handleSaveProfile} />
+                        </div>
+                        <div className="input-group" style={{marginTop: '12px'}}>
+                            <label htmlFor="userAvatar">URL аватара</label>
+                            <input id="userAvatar" type="text" value={tempAvatarUrl} onChange={e => setTempAvatarUrl(e.target.value)} onBlur={handleSaveProfile} />
                         </div>
                     </div>
+                    
+                    {mainAccount?.badge && (
+                        <div className="modal-section">
+                            <h3 className="modal-title">Настройка бонусов</h3>
+                             <div className="input-group">
+                                <label>Текст бонуса</label>
+                                <input type="text" value={mainAccount.badge.text} onChange={e => handleBadgeChange('text', e.target.value)} />
+                            </div>
+                            <div className="input-group" style={{marginTop: '12px', display: 'flex', flexDirection: 'row', alignItems: 'center', gap: '12px'}}>
+                                <label>Цвет бонуса</label>
+                                <input type="color" value={mainAccount.badge.color} onChange={e => handleBadgeChange('color', e.target.value)} style={{padding: '4px', height: '40px'}} />
+                            </div>
+                        </div>
+                    )}
 
                     <div className="modal-section">
                         <h3 className="modal-title">Счета и карты</h3>
                         {userData.accounts.map(acc => (
                             <div key={acc.id} className="section" style={{padding: '12px', marginBottom: '12px'}}>
                                 <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                                    <p style={{fontWeight: 600}}>{acc.name} ({acc.cards.length}/5 карт)</p>
-                                    <button onClick={() => handleAddCard(acc.id)} style={{border: 'none', background: 'var(--background-input)', padding: '6px 10px', borderRadius: '8px', cursor: 'pointer'}}>+ Карта</button>
+                                    <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                        <input 
+                                            type="text" 
+                                            value={acc.name} 
+                                            onChange={(e) => handleAccountNameChange(acc.id, e.target.value)}
+                                            style={{fontWeight: 600, border: 'none', background: 'none', fontSize: '16px', padding: 0, color: 'var(--text-primary)'}}
+                                        />
+                                        <span style={{color: 'var(--text-secondary)', fontSize: '14px'}}>({acc.cards.length} карт)</span>
+                                    </div>
+                                    <button onClick={() => handleAddCard(acc.id)} style={{border: 'none', background: 'var(--accent-blue)', color: 'white', padding: '6px 12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 500}}>+ Карта</button>
                                 </div>
                                 <div className="grid-selector" style={{marginTop: '12px'}}>
                                     {cardDesigns.map(design => (
@@ -396,12 +443,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
                              <button className="modal-button" onClick={() => handleAddNewAccount(true)}>+ Счет с картой</button>
                              <button className="modal-button" onClick={() => handleAddNewAccount(false)} style={{backgroundColor: 'var(--text-secondary)'}}>+ Счет без карты</button>
                          </div>
-                    </div>
-                    
-                    <div className="modal-section">
-                        <h3 className="modal-title">Настройка бонусов</h3>
-                         <button className="modal-button" onClick={changeCashbackIcons} style={{marginBottom: '8px', backgroundColor: '#5856d6'}}>Сменить иконки кэшбэка</button>
-                        <button className="modal-button" onClick={changeCashbackColors} style={{backgroundColor: '#5ac8fa'}}>Сменить цвета бонусов</button>
                     </div>
 
                      <div className="modal-section">
@@ -438,8 +479,6 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
 };
 
 export const TransactionHistoryModal: React.FC<{ isOpen: boolean, onClose: () => void, transactions: Transaction[] }> = ({ isOpen, onClose, transactions }) => {
-    const modalRef = useRef<HTMLDivElement>(null);
-
     const formatDateGroup = (date: Date) => {
         const today = new Date();
         const yesterday = new Date(today);
@@ -455,29 +494,17 @@ export const TransactionHistoryModal: React.FC<{ isOpen: boolean, onClose: () =>
         .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
         .reduce((acc, transaction) => {
             const date = new Date(transaction.date).toDateString();
-            if (!acc[date]) {
-                acc[date] = [];
-            }
+            if (!acc[date]) acc[date] = [];
             acc[date].push(transaction);
             return acc;
         }, {} as Record<string, Transaction[]>);
-
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-                onClose();
-            }
-        };
-        if (isOpen) document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isOpen, onClose]);
 
     if (!isOpen) return null;
 
     return (
         <>
             <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}></div>
-            <div ref={modalRef} className={`modal-container ${isOpen ? 'open' : ''}`}>
+            <div className={`modal-container ${isOpen ? 'open' : ''}`}>
                 <div className="modal-handle"></div>
                 <h2 className="modal-header">История операций</h2>
                 <div className="modal-content">
@@ -509,6 +536,263 @@ export const TransactionHistoryModal: React.FC<{ isOpen: boolean, onClose: () =>
     );
 };
 
+export const CardDetailsModal: React.FC<{ isOpen: boolean; onClose: () => void; cardData: { account: Account; card: Card } | null; onAction: (action: string) => void; }> = ({ isOpen, onClose, cardData, onAction }) => {
+    const [showDetails, setShowDetails] = useState(false);
+
+    useEffect(() => {
+        if (!isOpen) setShowDetails(false);
+    }, [isOpen]);
+    
+    if (!isOpen || !cardData) return null;
+    const { account, card } = cardData;
+
+    return (
+        <>
+            <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}></div>
+            <div className={`modal-container full-screen ${isOpen ? 'open' : ''}`}>
+                <div className="modal-header">
+                    <button className="modal-back-btn" onClick={onClose}><BackIcon /></button>
+                </div>
+                <div className="modal-content">
+                    <div className="card-details-view">
+                        <div className="card-carousel-item">
+                            <img src={account.cardDesignUrl} alt="Bank Card" />
+                        </div>
+                        <h3>{account.balance.toLocaleString('ru-RU')} ₽</h3>
+                        <p>Дебетовая карта · {card.number.slice(-4)}</p>
+                    </div>
+
+                    <div className="card-details-actions">
+                        <div className="card-action-btn" onClick={() => onAction('Блокировать карту')}>
+                            <div><BlockIcon /></div>
+                            <span>Блокировать</span>
+                        </div>
+                         <div className="card-action-btn" onClick={() => onAction('Перевыпустить карту')}>
+                            <div><ReissueIcon /></div>
+                            <span>Перевыпустить</span>
+                        </div>
+                         <div className="card-action-btn" onClick={() => onAction('Заморозить карту')}>
+                            <div><FreezeIcon /></div>
+                            <span>Заморозить</span>
+                        </div>
+                    </div>
+                    
+                    <div className="requisites-section">
+                        <div className="requisites-header">
+                            <h4>Реквизиты</h4>
+                            <button onClick={() => setShowDetails(!showDetails)}>{showDetails ? 'Скрыть' : 'Показать'}</button>
+                        </div>
+                        <div className={`requisites-grid ${showDetails ? 'row-view' : ''}`}>
+                            <div className="requisites-item">{showDetails ? card.number : `•••• ${card.number.slice(-4)}`}</div>
+                            <div className="requisites-item">{showDetails ? card.expiry : '••/••'}</div>
+                            <div className="requisites-item">{showDetails ? card.cvc : '•••'}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </>
+    );
+};
+
+export const TransferModal: React.FC<{ isOpen: boolean; onClose: () => void; accounts: Account[]; setUserData: React.Dispatch<React.SetStateAction<UserData>>; }> = ({ isOpen, onClose, accounts, setUserData }) => {
+    const [fromIndex, setFromIndex] = useState(0);
+    const [toIndex, setToIndex] = useState(accounts.length > 1 ? 1 : 0);
+    const [amount, setAmount] = useState('');
+    const addToast = useToast();
+    const fromRef = useRef<HTMLDivElement>(null);
+    const toRef = useRef<HTMLDivElement>(null);
+    const fromAccount = accounts[fromIndex];
+    const toAccount = accounts[toIndex];
+
+    useEffect(() => {
+        if (isOpen) {
+            setFromIndex(0);
+            setToIndex(accounts.length > 1 ? 1 : 0);
+            setAmount('');
+            if(fromRef.current) fromRef.current.scrollLeft = 0;
+            if(toRef.current) toRef.current.scrollLeft = toRef.current.clientWidth * 0.8 * (accounts.length > 1 ? 1 : 0);
+        }
+    }, [isOpen, accounts]);
+
+    const handleScroll = (ref: React.RefObject<HTMLDivElement>, setIndex: (index: number) => void) => {
+        if (!ref.current) return;
+        const scrollLeft = ref.current.scrollLeft;
+        const cardWidth = ref.current.clientWidth * 0.8; // 80% width
+        const newIndex = Math.round(scrollLeft / cardWidth);
+        setIndex(newIndex);
+    };
+
+    const handleTransfer = () => {
+        const transferAmount = parseFloat(amount);
+        if (isNaN(transferAmount) || transferAmount <= 0) {
+            addToast("Введите корректную сумму");
+            return;
+        }
+        if (fromAccount.id === toAccount.id) {
+            addToast("Выберите разные счета");
+            return;
+        }
+        if (fromAccount.balance < transferAmount) {
+            addToast("Недостаточно средств на счете списания");
+            return;
+        }
+
+        setUserData(prev => ({
+            ...prev,
+            accounts: prev.accounts.map(acc => {
+                if (acc.id === fromAccount.id) return { ...acc, balance: acc.balance - transferAmount };
+                if (acc.id === toAccount.id) return { ...acc, balance: acc.balance + transferAmount };
+                return acc;
+            })
+        }));
+        addToast(`Переведено ${transferAmount.toLocaleString('ru-RU')} ₽`);
+        onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <>
+            <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}></div>
+            <div className={`modal-container full-screen ${isOpen ? 'open' : ''}`}>
+                <div className="modal-header">
+                    <button className="modal-back-btn" onClick={onClose}><BackIcon /></button>
+                    Между счетами
+                </div>
+                <div className="modal-content" style={{padding: 0}}>
+                    <div>
+                        <p style={{padding: '0 16px 8px 16px', color: 'var(--text-secondary)'}}>Со счёта</p>
+                        <div ref={fromRef} className="transfer-carousel" onScroll={() => handleScroll(fromRef, setFromIndex)}>
+                            {accounts.map(acc => (
+                                <div key={acc.id} className="transfer-account-card" style={{backgroundColor: '#E65540'}}>
+                                    <p>{acc.name}</p>
+                                    <h3>{acc.balance.toLocaleString('ru-RU')} ₽</h3>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                     <div style={{marginTop: '24px'}}>
+                        <p style={{padding: '0 16px 8px 16px', color: 'var(--text-secondary)'}}>На счёт</p>
+                        <div ref={toRef} className="transfer-carousel" onScroll={() => handleScroll(toRef, setToIndex)}>
+                            {accounts.map(acc => (
+                                <div key={acc.id} className="transfer-account-card" style={{backgroundColor: '#4986CC'}}>
+                                    <p>{acc.name}</p>
+                                    <h3>{acc.balance.toLocaleString('ru-RU')} ₽</h3>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                    <div className="amount-input-container">
+                        <input 
+                          type="number" 
+                          className="modal-input" 
+                          placeholder="0 ₽"
+                          value={amount}
+                          onChange={e => setAmount(e.target.value)}
+                          style={{textAlign: 'center', fontSize: '32px', border: 'none', background: 'none'}}
+                        />
+                    </div>
+                </div>
+                 <div className="modal-footer">
+                    <button className="modal-button" onClick={handleTransfer} disabled={!amount}>Перевести</button>
+                </div>
+            </div>
+        </>
+    );
+};
+
+export const TransferByPhoneModal: React.FC<{ isOpen: boolean; onClose: () => void; userData: UserData; setUserData: React.Dispatch<React.SetStateAction<UserData>>; }> = ({ isOpen, onClose, userData, setUserData }) => {
+    const [fromIndex, setFromIndex] = useState(0);
+    const [phone, setPhone] = useState('+7 989 612-01-79');
+    const [amount, setAmount] = useState('');
+    const [message, setMessage] = useState('');
+    const [selectedBank, setSelectedBank] = useState<Bank | null>(null);
+    const addToast = useToast();
+    const fromRef = useRef<HTMLDivElement>(null);
+
+    const suggestedContacts = userData.favoriteContacts.filter(c => phone && c.phone.replace(/\D/g, '').includes(phone.replace(/\D/g, '')));
+    const suggestedBanks = suggestedContacts.flatMap(c => c.banks.map(b => ({...b, contactName: formatContactName(c.name)})));
+
+    useEffect(() => {
+        if (isOpen) {
+            setFromIndex(0);
+            setPhone('');
+            setAmount('');
+            setMessage('');
+            setSelectedBank(null);
+            if(fromRef.current) fromRef.current.scrollLeft = 0;
+        }
+    }, [isOpen, userData.accounts]);
+
+     const handleScroll = (ref: React.RefObject<HTMLDivElement>, setIndex: (index: number) => void) => {
+        if (!ref.current) return;
+        const scrollLeft = ref.current.scrollLeft;
+        const cardWidth = ref.current.clientWidth * 0.8; 
+        const newIndex = Math.round(scrollLeft / cardWidth);
+        setIndex(newIndex);
+    };
+
+    const handleTransfer = () => {
+        addToast("Перевод по телефону в разработке");
+        onClose();
+    };
+
+    if (!isOpen) return null;
+
+    return (
+        <>
+            <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}></div>
+            <div className={`modal-container full-screen ${isOpen ? 'open' : ''}`}>
+                <div className="modal-header">
+                    <button className="modal-back-btn" onClick={onClose}><BackIcon /></button>
+                    По номеру телефона
+                </div>
+                <div className="modal-content" style={{padding: 0}}>
+                    <div>
+                        <p style={{padding: '0 16px 8px 16px', color: 'var(--text-secondary)'}}>Со счёта</p>
+                        <div ref={fromRef} className="transfer-carousel" onScroll={() => handleScroll(fromRef, setFromIndex)}>
+                            {userData.accounts.map(acc => (
+                                <div key={acc.id} className="transfer-account-card" style={{backgroundColor: '#E65540'}}>
+                                    <p>{acc.name}</p>
+                                    <h3>{acc.balance.toLocaleString('ru-RU')} ₽</h3>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                     <div className="phone-transfer-content">
+                        <input type="tel" className="modal-input" placeholder="Номер телефона" value={phone} onChange={e => setPhone(e.target.value)} style={{marginBottom: '16px'}}/>
+
+                        <div className="bank-suggestions">
+                            {suggestedBanks.map(bank => (
+                                <div 
+                                  key={bank.id} 
+                                  className={`bank-card ${selectedBank?.id === bank.id ? 'selected' : ''}`} 
+                                  style={{ background: bank.gradient }}
+                                  onClick={() => setSelectedBank(bank)}
+                                >
+                                    <div className="bank-card-logo"><img src={bank.logoUrl} alt={bank.name}/></div>
+                                    <div className="bank-card-name">{bank.name}</div>
+                                    <div className="bank-card-user">{bank.contactName}</div>
+                                </div>
+                            ))}
+                             <div className="bank-card" style={{ background: allBanks.find(b=>b.id==='other')!.gradient }}>
+                                <div className="bank-card-logo"><img src={allBanks.find(b=>b.id==='other')!.logoUrl} alt="Другой банк"/></div>
+                                <div className="bank-card-name">Другой банк</div>
+                            </div>
+                        </div>
+                         <input type="number" className="modal-input" placeholder="0 ₽" value={amount} onChange={e => setAmount(e.target.value)} style={{marginTop: '24px'}} />
+                         <input type="text" className="modal-input" placeholder="Сообщение получателю" value={message} onChange={e => setMessage(e.target.value)} style={{marginTop: '12px'}} />
+                    </div>
+                </div>
+                 <div className="modal-footer">
+                    <button className="modal-button" onClick={handleTransfer} disabled={!amount || !selectedBank}>Перевести</button>
+                </div>
+            </div>
+        </>
+    );
+};
+
+
 export const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
     <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingBottom: '80px' }}>
         <h1 style={{textTransform: 'capitalize', color: '#858D97'}}>{title}</h1>
@@ -527,7 +811,7 @@ export const BottomNav: React.FC<{ activeTab: TabName, setActiveTab: (tab: TabNa
         <nav className="bottom-nav">
             {navItems.map(item => (
                  <div key={item.id} className={`nav-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => setActiveTab(item.id as TabName)}>
-                    {item.id === 'chat' && <div className="nav-notification">2</div>}
+                    {item.id === 'chat' && <div className="nav-notification">3</div>}
                     <div className="icon-container">{item.icon}</div>
                     <span>{item.label}</span>
                 </div>

@@ -1,15 +1,10 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
-import { MainScreen, PaymentsScreen } from './screens.tsx';
-import { BottomNav, PlaceholderScreen, ProfileModal, TransactionHistoryModal } from './components.tsx';
-import type { TabName, UserData, Bank, Account } from './types.ts';
+import { MainScreen, PaymentsScreen, ChatScreen } from './screens.tsx';
+import { BottomNav, PlaceholderScreen, ProfileModal, TransactionHistoryModal, CardDetailsModal, TransferModal, TransferByPhoneModal, allBanks } from './components.tsx';
+import type { TabName, UserData, Bank, Account, Card } from './types.ts';
+import { useToast } from './components.tsx';
 
 const tabOrder: TabName[] = ['main', 'payments', 'city', 'chat', 'more'];
-
-const allBanks: Bank[] = [
-    { id: 't-bank', name: 'Т-Банк', logoUrl: 'https://336118.selcdn.ru/Gutsy-Culebra/products/T-Bank-Seller-Logo.png' },
-    { id: 'sber', name: 'Сбер', logoUrl: 'https://i.imgur.com/ZXP1II7.jpeg' },
-    { id: 'vtb', name: 'ВТБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/VTB_Logo_2018.svg/1200px-VTB_Logo_2018.png' },
-];
 
 const now = new Date();
 const yesterday = new Date(now);
@@ -19,29 +14,8 @@ twoDaysAgo.setDate(now.getDate() - 2);
 
 const initialUserData: UserData = {
     name: 'Артем',
-    accounts: [
-         { 
-            id: 1, main: true, name: 'Зарплатная', balance: '0 ₽', badge: '129', iconName: 'ruble', iconBg: '#4A90E2',
-            cardDesignUrl: 'https://i.imgur.com/Z6uwYH7.jpeg',
-            cards: [
-                {id: 'c1'}, {id: 'c2'}, {id: 'c3'}
-            ]
-        },
-        { 
-            id: 2, main: false, name: 'Переводы', balance: '0 ₽', badge: 'x1', 
-            iconName: 'transfers', 
-            iconBg: '#4A90E2', 
-            cards: [],
-            cardDesignUrl: undefined
-        },
-        { 
-            id: 3, main: false, name: 'Сбор на другое', balance: '0 ₽', 
-            iconName: 'three-dots', 
-            iconBg: '#4A90E2', 
-            cards: [],
-            cardDesignUrl: undefined
-        },
-    ],
+    avatarUrl: 'https://i.pravatar.cc/80?u=artem',
+    accounts: [],
     cashbackPartners: [
         {id: 'p1', logoUrl: 'https://i.imgur.com/uplZIqA.png'},
         {id: 'p2', logoUrl: 'https://i.imgur.com/EzmYEEI.png'},
@@ -54,8 +28,9 @@ const initialUserData: UserData = {
         { color: '#E74C3C', percentage: 10 },
     ],
     favoriteContacts: [
-        { id: 1, name: 'Ксения К.', initials: 'КК', phone: '+79261234567', banks: [allBanks[0]] },
-        { id: 2, name: 'Андрей Госов', initials: 'АГ', phone: '+79031234568', banks: [allBanks[1], allBanks[2]] },
+        { id: 1, name: 'Ксения Кравцова', initials: 'КК', phone: '+79261234567', banks: [allBanks[0]] },
+        { id: 2, name: 'Марина Борисова', initials: 'МБ', phone: '+79809082239', banks: [allBanks[0], allBanks.find(b => b.id === 'youmoney')!] },
+        { id: 3, name: 'Архипп Богданов', initials: 'АБ', phone: '+79896120179', banks: [allBanks.find(b => b.id === 'alfa')!, allBanks.find(b => b.id === 'sber')!, allBanks.find(b => b.id === 'yandex')!]},
     ],
     transactions: [
         { id: 't1', name: 'Перевод от Ксении К.', description: 'Пополнение', amount: 5000, category: 'income', iconBg: '#2ECC71', date: now.toISOString() },
@@ -74,7 +49,36 @@ export const App: React.FC = () => {
     const prevTabRef = useRef<TabName>('main');
     const [isProfileOpen, setIsProfileOpen] = useState(false);
     const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+    const [isTransferOpen, setIsTransferOpen] = useState(false);
+    const [isPhoneTransferOpen, setIsPhoneTransferOpen] = useState(false);
+    const [cardDetailsData, setCardDetailsData] = useState<{ account: Account, card: Card } | null>(null);
     const [userData, setUserData] = useState<UserData>(initialUserData);
+    const addToast = useToast();
+
+    const handleAction = (action: string) => {
+        if (action.startsWith('Открыть карту')) {
+            const [accountId, cardId] = action.split(' ')[2].split('/');
+            const account = userData.accounts.find(a => a.id === parseInt(accountId));
+            if (account) {
+                const card = account.cards.find(c => c.id === cardId);
+                if (card) {
+                    setCardDetailsData({ account, card });
+                }
+            }
+        } else if (action === 'Между счетами') {
+            setIsTransferOpen(true);
+        } else if (action === 'Перевести по телефону') {
+            setIsPhoneTransferOpen(true);
+        } else if (action === 'Блокировать карту') {
+            addToast('Карта заблокирована');
+        } else if (action === 'Перевыпустить карту') {
+            addToast('Заявка на перевыпуск принята');
+        } else if (action === 'Заморозить карту') {
+            addToast('Операции по карте заморожены');
+        } else {
+           addToast(`'${action}' в разработке`);
+        }
+    };
 
     useLayoutEffect(() => {
         const prevIndex = tabOrder.indexOf(prevTabRef.current);
@@ -91,14 +95,15 @@ export const App: React.FC = () => {
             setUserData,
             onProfileClick: () => setIsProfileOpen(true),
             isProfileOpen,
-            onHistoryClick: () => setIsHistoryOpen(true)
+            onHistoryClick: () => setIsHistoryOpen(true),
+            onAction: handleAction
         };
 
         switch (activeTab) {
             case 'main': return <MainScreen {...mainScreenProps} />;
             case 'payments': return <PaymentsScreen />;
             case 'city': return <PlaceholderScreen title="Город" />;
-            case 'chat': return <PlaceholderScreen title="Чат" />;
+            case 'chat': return <ChatScreen />;
             case 'more': return <PlaceholderScreen title="Ещё" />;
             default: return <MainScreen {...mainScreenProps} />;
         }
@@ -112,6 +117,9 @@ export const App: React.FC = () => {
             <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
             <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} userData={userData} setUserData={setUserData}/>
             <TransactionHistoryModal isOpen={isHistoryOpen} onClose={() => setIsHistoryOpen(false)} transactions={userData.transactions} />
+            <CardDetailsModal isOpen={!!cardDetailsData} onClose={() => setCardDetailsData(null)} cardData={cardDetailsData} onAction={handleAction} />
+            <TransferModal isOpen={isTransferOpen} onClose={() => setIsTransferOpen(false)} accounts={userData.accounts} setUserData={setUserData} />
+            <TransferByPhoneModal isOpen={isPhoneTransferOpen} onClose={() => setIsPhoneTransferOpen(false)} userData={userData} setUserData={setUserData} />
         </>
     );
 };

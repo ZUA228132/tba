@@ -74,8 +74,8 @@
       height: 40px;
       border-radius: 50%;
       background-color: #e0e0e0;
-      background-image: url('https://i.pravatar.cc/80?u=artem');
       background-size: cover;
+      background-position: center;
     }
     .user-name {
       font-size: 20px;
@@ -154,14 +154,15 @@
     .action-button:active { transform: scale(0.95); }
     .action-button .icon-wrapper {
         width: 100%;
+        max-width: 64px;
         aspect-ratio: 1 / 1;
         background-color: var(--background-card);
         border-radius: var(--border-radius-xl);
         display: flex; align-items: center; justify-content: center;
         margin-bottom: 8px;
     }
-    .action-button svg { width: 24px; height: 24px; fill: var(--text-primary); }
-    .action-button .icon-wrapper img { width: 32px; height: 32px; }
+    .action-button svg { width: 28px; height: 28px; fill: var(--text-primary); }
+    .action-button .icon-wrapper img { width: 28px; height: 28px; }
     .action-button-transfer .icon-wrapper {
         background: linear-gradient(135deg, #F2F8FF 0%, #E6F2FF 100%);
     }
@@ -195,7 +196,7 @@
       width: 40px; height: 40px; border-radius: 50%;
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
-    .account-icon svg { width: 24px; height: 24px; }
+    .account-icon svg, .account-icon img { width: 24px; height: 24px; }
     .account-details { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; min-width: 0;}
     .account-name { 
       font-size: 15px; font-weight: 600;
@@ -206,10 +207,10 @@
     .account-balance { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
     .account-card.main-account .account-details { align-items: flex-start; }
     .account-info-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; overflow: hidden; }
-    .account-info-right { text-align: right; }
+    .account-info-right { display: flex; align-items: center; }
     .main-account .account-balance { font-size: 16px; font-weight: 600; color: var(--text-primary); }
     .notification-badge {
-      background-color: var(--notification-red); color: white;
+      color: white;
       font-size: 11px; font-weight: 600; padding: 2px 6px;
       border-radius: 10px; margin-left: 8px;
     }
@@ -231,6 +232,7 @@
         box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         transition: transform 0.2s ease;
         scroll-snap-align: start;
+        cursor: pointer;
     }
     .card-carousel-item:active { transform: scale(0.97); }
     .card-carousel-item img { width: 100%; height: 100%; object-fit: cover; }
@@ -269,7 +271,76 @@
     .single-action-btn { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 600; padding: 16px; }
     .single-action-btn .service-icon { background-color: #EBF1FB; }
 
-    /* --- Modals (Profile & History) --- */
+    /* --- Chat Screen --- */
+    .chat-header {
+      padding: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background-color: var(--background-main);
+    }
+    .chat-header h1 { font-size: 28px; }
+    .chat-header-actions { display: flex; gap: 16px; }
+    .chat-header-actions button { background: none; border: none; cursor: pointer; padding: 0; }
+    .chat-header-actions svg { width: 28px; height: 28px; fill: var(--text-primary); }
+    .chat-list { display: flex; flex-direction: column; }
+    .chat-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 16px;
+      cursor: pointer;
+      border-bottom: 1px solid var(--background-input);
+      background-color: var(--background-card);
+    }
+    .chat-item:first-of-type { border-top-left-radius: var(--border-radius-l); border-top-right-radius: var(--border-radius-l); }
+    .chat-item:last-of-type { border-bottom: none; border-bottom-left-radius: var(--border-radius-l); border-bottom-right-radius: var(--border-radius-l); }
+    .chat-item:hover { background-color: #f0f0f0; }
+    .chat-avatar {
+      width: 56px;
+      height: 56px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      background-size: cover;
+      background-position: center;
+      background-color: var(--background-input);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .chat-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .chat-avatar svg { width: 32px; height: 32px; }
+    .chat-content { flex-grow: 1; overflow: hidden; }
+    .chat-title { font-size: 16px; font-weight: 600; }
+    .chat-message {
+      font-size: 14px;
+      color: var(--text-secondary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-top: 4px;
+    }
+    .chat-info {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+    }
+    .chat-time { margin-bottom: 8px; }
+    .chat-unread-badge {
+      background-color: var(--notification-red);
+      color: white;
+      font-weight: 600;
+      border-radius: 10px;
+      padding: 2px 6px;
+      font-size: 11px;
+    }
+
+
+    /* --- Modals (Base & Profile) --- */
     .modal-overlay {
       position: absolute; inset: 0;
       background-color: var(--background-overlay);
@@ -285,12 +356,18 @@
       border-top-left-radius: var(--border-radius-xl);
       border-top-right-radius: var(--border-radius-xl);
       z-index: 1001;
-      max-height: 85%;
-      padding: 16px 16px 40px 16px;
+      max-height: 90%;
+      height: 90%;
+      padding: 16px 0 40px 0;
       transform: translateY(100%);
       transition: transform var(--transition-modal);
       display: flex;
       flex-direction: column;
+    }
+    .modal-container.full-screen {
+        height: 100%;
+        max-height: 100%;
+        border-radius: 0;
     }
     .modal-container.open { transform: translateY(0); }
     .modal-handle {
@@ -303,21 +380,30 @@
       font-size: 20px;
       font-weight: 700;
       margin-bottom: 16px;
-      padding: 0 8px;
+      padding: 0 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
     }
-    .modal-content { overflow-y: auto; flex-grow: 1; }
+    .modal-back-btn { background: none; border: none; cursor: pointer; padding: 4px; display: flex; align-items: center; justify-content: center; fill: var(--text-primary); }
+    .modal-back-btn svg { width: 28px; height: 28px; }
+    .modal-content { overflow-y: auto; flex-grow: 1; padding: 0 16px; }
+    .modal-footer { padding: 16px; margin-top: auto; flex-shrink: 0; }
     .modal-section { margin-bottom: 24px; }
     .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
     .input-group { display: flex; flex-direction: column; gap: 4px; }
     .input-group label { font-size: 14px; color: var(--text-secondary); }
-    .input-group input {
+    .input-group input, .modal-input {
       background-color: var(--background-card);
       border: 1px solid var(--background-input);
       border-radius: var(--border-radius-m);
       padding: 12px; font-size: 16px; outline: none;
       transition: border-color 0.2s ease;
+      width: 100%;
+      font-family: 'Inter', sans-serif;
+      color: var(--text-primary);
     }
-    .input-group input:focus { border-color: var(--accent-blue); }
+    .input-group input:focus, .modal-input:focus { border-color: var(--accent-blue); }
     .grid-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
     .grid-item {
       aspect-ratio: 1.58; /* Card ratio */
@@ -344,13 +430,14 @@
     }
     .grid-item img { width: 100%; height: 100%; object-fit: cover; }
     .modal-button {
-      background-color: var(--accent-blue); color: white;
+      background-color: var(--accent-yellow); color: var(--text-primary);
       border: none; border-radius: var(--border-radius-m);
       padding: 14px; font-size: 16px; font-weight: 600;
       width: 100%; cursor: pointer; margin-top: 12px;
       transition: background-color 0.2s ease;
     }
-    .modal-button:active { background-color: #3a7ac2; }
+    .modal-button:disabled { background-color: #E6E7E8; cursor: not-allowed; }
+    .modal-button:active { background-color: #e6c827; }
     .contact-list { display: flex; flex-direction: column; gap: 8px; }
     .contact-item { display: flex; align-items: center; gap: 12px; background-color: var(--background-card); padding: 8px; border-radius: var(--border-radius-m); }
     .contact-item-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #eee; display: flex; align-items: center; justify-content: center; font-weight: 600; }
@@ -374,7 +461,7 @@
     .delete-contact-btn svg { width: 20px; height: 20px; fill: var(--text-secondary); transition: fill var(--transition-fast); }
     .delete-contact-btn:hover svg { fill: var(--notification-red); }
 
-    /* --- Transaction History Modal Styles --- */
+    /* --- Transaction History Modal --- */
     .transaction-group { margin-bottom: 20px; }
     .transaction-date-header { font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 12px; padding: 0 8px; }
     .transaction-list { display: flex; flex-direction: column; gap: 8px; }
@@ -402,7 +489,79 @@
     .transaction-amount { font-size: 15px; font-weight: 600; white-space: nowrap; }
     .transaction-amount.expense { color: var(--text-primary); }
     .transaction-amount.income { color: #34C759; }
+    
+    /* --- Card Details Modal --- */
+    .card-details-view { text-align: center; }
+    .card-details-view .card-carousel-item {
+        flex: none; width: 240px; height: 150px;
+        margin: 0 auto 24px auto; border-radius: 12px;
+    }
+    .card-details-view h3 { font-size: 18px; font-weight: 600; }
+    .card-details-view p { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
+    .card-details-actions { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin: 24px 0; }
+    .card-action-btn { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; }
+    .card-action-btn div { width: 56px; height: 56px; border-radius: 50%; background-color: var(--notification-red); color: white; display: flex; align-items: center; justify-content: center; }
+    .card-action-btn svg { width: 28px; height: 28px; fill: white; }
+    .card-action-btn span { font-size: 13px; font-weight: 500; }
+    .requisites-section { background-color: var(--background-card); border-radius: var(--border-radius-l); padding: 16px; }
+    .requisites-header { display: flex; justify-content: space-between; align-items: center; }
+    .requisites-header h4 { font-size: 18px; font-weight: 700; }
+    .requisites-header button { background: none; border: none; color: var(--accent-blue); font-size: 16px; font-weight: 500; cursor: pointer; }
+    .requisites-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 16px; }
+    .requisites-grid.row-view { grid-template-columns: 1fr 1fr; }
+    .requisites-item { background-color: var(--background-input); border-radius: var(--border-radius-m); padding: 12px; font-size: 16px; color: var(--text-primary); font-family: 'Menlo', monospace; }
 
+    /* --- Transfer Modal --- */
+    .transfer-carousel { 
+      overflow-x: auto;
+      scroll-snap-type: x mandatory; 
+      display: flex; 
+      gap: 12px; 
+      padding: 16px; 
+      margin: 0 -16px; 
+      -ms-overflow-style: none;
+      scrollbar-width: none;
+    }
+    .transfer-carousel::-webkit-scrollbar { display: none; }
+    .transfer-account-card {
+        flex: 0 0 80%;
+        scroll-snap-align: center;
+        border-radius: var(--border-radius-xl);
+        padding: 16px;
+        color: white;
+    }
+    .transfer-account-card p { font-size: 16px; font-weight: 500; opacity: 0.8; }
+    .transfer-account-card h3 { font-size: 24px; font-weight: 700; margin-top: 4px; }
+    .amount-input-container { padding: 16px; margin-top: 24px; }
+    .amount-input-container input {
+        text-align: center;
+        font-size: 32px;
+        font-weight: 700;
+        border: none;
+        background: none;
+        padding: 0;
+    }
+    /* Transfer By Phone Modal */
+    .phone-transfer-content { padding: 16px; }
+    .bank-suggestions { display: flex; gap: 12px; }
+    .bank-card {
+      padding: 12px;
+      border-radius: var(--border-radius-l);
+      width: 120px;
+      flex-shrink: 0;
+      cursor: pointer;
+      border: 2px solid transparent;
+      transition: border-color var(--transition-fast);
+    }
+    .bank-card.selected { border-color: var(--accent-blue); }
+    .bank-card-logo {
+      width: 32px; height: 32px; border-radius: 50%;
+      background-color: rgba(255,255,255,0.8);
+      display: flex; align-items: center; justify-content: center; margin-bottom: 24px;
+    }
+    .bank-card-logo img { width: 20px; height: 20px; object-fit: contain; }
+    .bank-card-name { font-size: 14px; font-weight: 600; color: white; }
+    .bank-card-user { font-size: 12px; color: white; opacity: 0.8; }
 
     /* --- Bottom Nav --- */
     .bottom-nav {

@@ -2,14 +2,20 @@ export type TabName = 'main' | 'payments' | 'city' | 'chat' | 'more';
 
 export interface Card {
   id: string;
+  number: string;
+  expiry: string;
+  cvc: string;
 }
 
 export interface Account {
   id: number;
   main: boolean;
   name: string;
-  balance: string;
-  badge?: string;
+  balance: number; 
+  badge?: {
+    text: string;
+    color: string;
+  };
   iconName: string;
   iconBg: string;
   cards: Card[];
@@ -25,6 +31,7 @@ export interface Bank {
     id: string;
     name: string;
     logoUrl: string;
+    gradient: string;
 }
 
 export interface FavoriteContact {
@@ -49,6 +56,7 @@ export interface Transaction {
 
 export interface UserData {
     name: string;
+    avatarUrl: string;
     accounts: Account[];
     cashbackPartners: CashbackPartner[];
     cashbackProgress: { color: string; percentage: number }[];
