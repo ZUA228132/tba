@@ -72,12 +72,12 @@ export const App: React.FC = () => {
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'main': return <MainScreen userData={userData} onProfileClick={() => setIsProfileOpen(true)} isProfileOpen={isProfileOpen}/>;
+            case 'main': return <MainScreen userData={userData} setUserData={setUserData} onProfileClick={() => setIsProfileOpen(true)} isProfileOpen={isProfileOpen}/>;
             case 'payments': return <PaymentsScreen />;
             case 'city': return <PlaceholderScreen title="Город" />;
             case 'chat': return <PlaceholderScreen title="Чат" />;
             case 'more': return <PlaceholderScreen title="Ещё" />;
-            default: return <MainScreen userData={userData} onProfileClick={() => setIsProfileOpen(true)} isProfileOpen={isProfileOpen} />;
+            default: return <MainScreen userData={userData} setUserData={setUserData} onProfileClick={() => setIsProfileOpen(true)} isProfileOpen={isProfileOpen} />;
         }
     };
     

@@ -8,7 +8,7 @@ import {
     HousingIcon, GovServicesIcon, CreditIcon, RequestMoneyIcon
 } from './components.tsx';
 
-export const MainScreen: React.FC<{ userData: UserData; onProfileClick: () => void; isProfileOpen: boolean; }> = ({ userData, onProfileClick, isProfileOpen }) => {
+export const MainScreen: React.FC<{ userData: UserData; setUserData: React.Dispatch<React.SetStateAction<UserData>>; onProfileClick: () => void; isProfileOpen: boolean; }> = ({ userData, setUserData, onProfileClick, isProfileOpen }) => {
     const handleAction = useActionHandler();
     const [isAnimated, setIsAnimated] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -16,6 +16,19 @@ export const MainScreen: React.FC<{ userData: UserData; onProfileClick: () => vo
     const pullDistance = useRef(0);
     const mainRef = useRef<HTMLElement>(null);
     const indicatorRef = useRef<HTMLDivElement>(null);
+    const dragItem = useRef<number | null>(null);
+    const dragOverItem = useRef<number | null>(null);
+
+    const handleSort = () => {
+        if (dragItem.current === null || dragOverItem.current === null || dragItem.current === dragOverItem.current) {
+            return;
+        }
+
+        const accountsCopy = [...userData.accounts];
+        const draggedItemContent = accountsCopy.splice(dragItem.current, 1)[0];
+        accountsCopy.splice(dragOverItem.current, 0, draggedItemContent);
+        setUserData(prev => ({ ...prev, accounts: accountsCopy }));
+    };
 
     const triggerAnimation = () => {
         setIsAnimated(false);
@@ -84,7 +97,27 @@ export const MainScreen: React.FC<{ userData: UserData; onProfileClick: () => vo
                 <QuickActions onAction={handleAction} />
                 <div className="accounts-list">
                     {userData.accounts.map((acc, index) => (
-                        <AccountCard key={acc.id} account={acc} isAnimated={isAnimated} animationIndex={index} onAction={handleAction} />
+                         <div
+                            key={acc.id}
+                            className="account-card-wrapper"
+                            draggable
+                            onDragStart={(e) => {
+                                dragItem.current = index;
+                                e.currentTarget.classList.add('dragging');
+                            }}
+                            onDragEnter={() => {
+                                dragOverItem.current = index;
+                            }}
+                            onDragEnd={(e) => {
+                                e.currentTarget.classList.remove('dragging');
+                                handleSort();
+                                dragItem.current = null;
+                                dragOverItem.current = null;
+                            }}
+                            onDragOver={(e) => e.preventDefault()}
+                        >
+                            <AccountCard account={acc} isAnimated={isAnimated} animationIndex={index} onAction={handleAction} />
+                        </div>
                     ))}
                 </div>
             </main>

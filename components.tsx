@@ -425,10 +425,10 @@ export const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
 export const BottomNav: React.FC<{ activeTab: TabName, setActiveTab: (tab: TabName) => void }> = ({ activeTab, setActiveTab }) => {
     const navItems = [
         { id: 'main', label: 'Главная', icon: <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg> },
-        { id: 'payments', label: 'Платежи', icon: <svg viewBox="0 0 24 24"><path d="M18 4H6C3.79 4 2 5.79 2 8v8c0 2.21 1.79 4 4 4h12c2.21 0 4-1.79 4-4V8c0-2.21-1.79-4-4-4zm-1 14H7c-1.1 0-2-.9-2-2V9h12v7c0 1.1-.9 2-2 2zm1-9H6V8c0-1.1.9-2 2-2h8c1.1 0 2 .9 2 2v1z"></path></svg> },
-        { id: 'city', label: 'Город', icon: <svg viewBox="0 0 24 24"><path d="m12 2-5.5 9h11z"></path><path d="M17.5 13H20v7h-2.5zM4 20h2.5v-7H4zM10.5 20h3v-7h-3z"></path></svg> },
+        { id: 'payments', label: 'Платежи', icon: <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg> },
+        { id: 'city', label: 'Город', icon: <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12.55l5.55 2.22-2.22 5.55-5.55-2.22 2.22-5.55z"></path></svg> },
         { id: 'chat', label: 'Чат', icon: <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path></svg> },
-        { id: 'more', label: 'Ещё', icon: <svg viewBox="0 0 24 24"><path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z"></path></svg> },
+        { id: 'more', label: 'Ещё', icon: <svg viewBox="0 0 24 24"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></svg> },
     ];
     return (
         <nav className="bottom-nav">

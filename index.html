@@ -169,10 +169,21 @@
 
     /* --- Account Cards & Card Carousel --- */
     .accounts-list { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
+    .account-card-wrapper {
+      cursor: grab;
+      user-select: none; /* Prevent text selection while dragging */
+    }
+    .account-card-wrapper:active {
+      cursor: grabbing;
+    }
+    .account-card-wrapper.dragging .account-card {
+      opacity: 0.4;
+      box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    }
     .account-card {
       background-color: var(--background-card); border-radius: var(--border-radius-l);
-      padding: 16px; display: flex; align-items: center; gap: 12px; cursor: pointer;
-      transition: transform var(--transition-fast);
+      padding: 16px; display: flex; align-items: center; gap: 12px;
+      transition: transform var(--transition-fast), opacity var(--transition-fast), box-shadow var(--transition-fast);
     }
     .account-card:active { transform: scale(0.98); }
     .account-icon {
@@ -180,8 +191,13 @@
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .account-icon svg { width: 24px; height: 24px; }
-    .account-details { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; overflow: hidden; }
-    .account-name { font-size: 15px; font-weight: 600; }
+    .account-details { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; }
+    .account-name { 
+      font-size: 15px; font-weight: 600;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
     .account-balance { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
     .account-card.main-account .account-details { align-items: flex-start; }
     .account-info-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
