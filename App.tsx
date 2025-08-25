@@ -1,14 +1,55 @@
 import React, { useState, useRef, useLayoutEffect } from 'react';
 import { MainScreen, PaymentsScreen } from './screens.tsx';
-import { BottomNav, PlaceholderScreen } from './components.tsx';
-import type { TabName } from './types.ts';
+import { BottomNav, PlaceholderScreen, ProfileModal, RubleIcon, ThreeDotsIcon } from './components.tsx';
+import type { TabName, UserData, Bank } from './types.ts';
 
 const tabOrder: TabName[] = ['main', 'payments', 'city', 'chat', 'more'];
+
+const allBanks: Bank[] = [
+    { id: 't-bank', name: 'Т-Банк', logoUrl: 'https://336118.selcdn.ru/Gutsy-Culebra/products/T-Bank-Seller-Logo.png' },
+    { id: 'sber', name: 'Сбер', logoUrl: 'https://i.pinimg.com/1200x/92/ae/48/92/ae481096cfc19a71486694b627e11b.jpg' },
+    { id: 'vtb', name: 'ВТБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/VTB_Logo_2018.svg/1200px-VTB_Logo_2018.png' },
+];
+
+const initialUserData: UserData = {
+    name: 'Артем',
+    accounts: [
+         { 
+            id: 1, main: true, name: 'Зарплатная', balance: '0 ₽', badge: '129', icon: <RubleIcon />, iconBg: '#4A90E2',
+            cards: [
+                {id: 'c1', designUrl: 'https://i.imgur.com/QrZADtb.png'},
+                {id: 'c2', designUrl: 'https://i.imgur.com/3MNT66B.png'},
+                {id: 'c3', designUrl: 'https://i.imgur.com/fmnHpJs.png'},
+                {id: 'c4', designUrl: 'https://i.imgur.com/kt7QVs5.png'},
+            ]
+        },
+        { id: 2, main: false, name: 'Переводы', balance: '0 ₽', badge: 'x1', icon: <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>, iconBg: '#4A90E2', cards: [] },
+        { id: 3, main: false, name: 'Сбор на другое', balance: '0 ₽', icon: <ThreeDotsIcon />, iconBg: '#4A90E2', cards: [] },
+    ],
+    cashbackPartners: [
+        {id: 'p1', logoUrl: 'https://i.imgur.com/uplZIqA.png'},
+        {id: 'p2', logoUrl: 'https://i.imgur.com/EzmYEEI.png'},
+        {id: 'p3', logoUrl: 'https://i.imgur.com/bGshFAV.png'},
+    ],
+    cashbackProgress: [
+        { color: '#8E44AD', percentage: 40 },
+        { color: '#3498DB', percentage: 30 },
+        { color: '#F1C40F', percentage: 20 },
+        { color: '#E74C3C', percentage: 10 },
+    ],
+    favoriteContacts: [
+        { id: 1, name: 'Ксения К.', initials: 'КК', banks: [allBanks[0]] },
+        { id: 2, name: 'Андрей Госов', initials: 'АГ', banks: [allBanks[1], allBanks[2]] },
+    ]
+}
+
 
 export const App: React.FC = () => {
     const [activeTab, setActiveTab] = useState<TabName>('main');
     const [animationClass, setAnimationClass] = useState('');
     const prevTabRef = useRef<TabName>('main');
+    const [isProfileOpen, setIsProfileOpen] = useState(false);
+    const [userData, setUserData] = useState<UserData>(initialUserData);
 
     useLayoutEffect(() => {
         const prevIndex = tabOrder.indexOf(prevTabRef.current);
@@ -21,12 +62,12 @@ export const App: React.FC = () => {
 
     const renderContent = () => {
         switch (activeTab) {
-            case 'main': return <MainScreen />;
+            case 'main': return <MainScreen userData={userData} onProfileClick={() => setIsProfileOpen(true)} isProfileOpen={isProfileOpen}/>;
             case 'payments': return <PaymentsScreen />;
             case 'city': return <PlaceholderScreen title="Город" />;
             case 'chat': return <PlaceholderScreen title="Чат" />;
             case 'more': return <PlaceholderScreen title="Ещё" />;
-            default: return <MainScreen />;
+            default: return <MainScreen userData={userData} onProfileClick={() => setIsProfileOpen(true)} isProfileOpen={isProfileOpen} />;
         }
     };
     
@@ -36,6 +77,7 @@ export const App: React.FC = () => {
                 {renderContent()}
             </div>
             <BottomNav activeTab={activeTab} setActiveTab={setActiveTab} />
+            <ProfileModal isOpen={isProfileOpen} onClose={() => setIsProfileOpen(false)} userData={userData} setUserData={setUserData}/>
         </>
     );
 };

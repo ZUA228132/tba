@@ -1,16 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useActionHandler } from './hooks.tsx';
-import type { MiniCardData } from './types.ts';
+import type { UserData } from './types.ts';
 import { 
     Header, Stories, InfoCards, QuickActions, AccountCard, SearchIcon,
     TinkoffIcon, MobileIcon, PlusIcon, BillIcon, QRIcon, ArrowRightIcon,
     PhoneIcon, FromBankIcon, BetweenAccountsIcon, ByCardNumberIcon, ByContractIcon,
-    HousingIcon, GovServicesIcon, CreditIcon, RequestMoneyIcon, RubleIcon,
-    ThreeDotsIcon, RefreshIcon
+    HousingIcon, GovServicesIcon, CreditIcon, RequestMoneyIcon
 } from './components.tsx';
 
-
-export const MainScreen = () => {
+export const MainScreen: React.FC<{ userData: UserData; onProfileClick: () => void; isProfileOpen: boolean; }> = ({ userData, onProfileClick, isProfileOpen }) => {
     const handleAction = useActionHandler();
     const [isAnimated, setIsAnimated] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -74,34 +72,19 @@ export const MainScreen = () => {
       pullDistance.current = 0;
     };
 
-
-    const [miniCards] = useState<MiniCardData[]>([
-        { id: 1, type: 'yellow', last4: '5074' }, { id: 2, type: 'yellow', last4: '4000' },
-        { id: 3, type: 'yellow', last4: '6647' }, { id: 4, type: 'yellow', last4: '5572' },
-        { id: 5, type: 'black', last4: '6882' },
-    ]);
-     const accounts = [
-        { id: 1, main: true, name: 'Зарплатная', balance: '0 ₽', badge: '129', icon: <RubleIcon />, iconBg: '#4A90E2' },
-        { id: 2, name: 'Переводы', balance: '0 ₽', badge: 'x1', icon: <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>, iconBg: '#4A90E2' },
-        { id: 3, name: 'Сбор на другое', balance: '0 ₽', icon: <ThreeDotsIcon />, iconBg: '#4A90E2' },
-        { id: 4, name: 'Сбор на другое', balance: '0 из 100 000 000 ₽', icon: <ThreeDotsIcon />, iconBg: '#4A90E2' },
-        { id: 5, name: 'Самозанятость', balance: '', icon: <svg viewBox="0 0 24 24"><path fill="white" d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>, iconBg: '#50E3C2' },
-        { id: 6, name: 'Мобильная связь', balance: 'T-Мобайл', icon: <svg viewBox="0 0 24 24"><path fill="white" d="M17 1.01L7 1c-1.1 0-2 .9-2 2v18c0 1.1.9 2 2 2h10c1.1 0 2-.9 2-2V3c0-1.1-.9-1.99-2-1.99zM17 19H7V5h10v14z"/></svg>, iconBg: '#F5A623' },
-        { id: 7, name: 'Автокредит', balance: '1 500 000 ₽', icon: <svg viewBox="0 0 24 24"><path fill="white" d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.5 16c-.83 0-1.5-.67-1.5-1.5S5.67 13 6.5 13s1.5.67 1.5 1.5S7.33 16 6.5 16zm11 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zM5 11l1.5-4.5h11L19 11H5z"/></svg>, iconBg: '#7DC8E8' },
-    ];
     return (
         <>
-            <Header onAction={handleAction} />
+            <Header name={userData.name} onProfileClick={onProfileClick} isProfileOpen={isProfileOpen} onAction={handleAction} />
             <main ref={mainRef} onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleTouchEnd}>
                 <div ref={indicatorRef} className={`pull-to-refresh-indicator ${isRefreshing ? 'refreshing' : ''}`} style={{ opacity: isRefreshing ? 1 : 0, transform: `translateY(${isRefreshing ? '40px' : '0px'})` }}>
-                   <RefreshIcon />
+                   {/* <RefreshIcon /> */}
                 </div>
                 <Stories onAction={handleAction} />
-                <InfoCards onAction={handleAction} />
+                <InfoCards partners={userData.cashbackPartners} progress={userData.cashbackProgress} onAction={handleAction} />
                 <QuickActions onAction={handleAction} />
                 <div className="accounts-list">
-                    {accounts.map((acc, index) => (
-                        <AccountCard key={acc.id} account={acc} miniCards={acc.main ? miniCards : undefined} isAnimated={isAnimated} animationIndex={index} onAction={handleAction} />
+                    {userData.accounts.map((acc, index) => (
+                        <AccountCard key={acc.id} account={acc} isAnimated={isAnimated} animationIndex={index} onAction={handleAction} />
                     ))}
                 </div>
             </main>
@@ -135,8 +118,6 @@ export const PaymentsScreen = () => {
         { label: 'Мобильная связь', icon: <MobileIcon /> }, { label: 'ЖКХ', icon: <HousingIcon /> },
         { label: 'Госуслуги', icon: <GovServicesIcon /> }, { label: 'Погашение кредита', icon: <CreditIcon /> },
     ];
-
-    const allSections = [favorites, transfers, payments, []];
 
     return (
         <>

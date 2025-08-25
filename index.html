@@ -12,6 +12,7 @@
       --background-main: #F5F5F7;
       --background-card: #FFFFFF;
       --background-input: #E6E7E8;
+      --background-overlay: rgba(0, 0, 0, 0.6);
       --text-primary: #1A1A1A;
       --text-secondary: #858D97;
       --text-tertiary: #B8BFC7;
@@ -22,6 +23,7 @@
       --border-radius-l: 16px;
       --border-radius-m: 12px;
       --transition-fast: 0.2s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+      --transition-modal: 0.3s cubic-bezier(0.32, 0.72, 0, 1);
     }
     * {
       box-sizing: border-box;
@@ -74,6 +76,7 @@
       align-items: center;
       gap: 12px;
       margin-bottom: 16px;
+      cursor: pointer;
     }
     .avatar {
       width: 40px;
@@ -90,7 +93,8 @@
       align-items: center;
       gap: 4px;
     }
-    .user-name svg { width: 24px; height: 24px; opacity: 0.5; }
+    .user-name svg { width: 24px; height: 24px; opacity: 0.5; transition: transform var(--transition-fast); }
+    .user-name.open svg { transform: rotate(180deg); }
     .search-bar {
       display: flex;
       align-items: center;
@@ -144,7 +148,7 @@
     }
     .progress-bar div { height: 100%; }
     .bonus-logos { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
-    .bonus-logos img { width: 28px; height: 28px; border-radius: 50%; }
+    .bonus-logos img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; }
     .quick-actions {
       display: grid; grid-template-columns: repeat(4, 1fr);
       gap: 8px; margin-top: 24px;
@@ -163,7 +167,7 @@
     }
     .action-button svg { width: 24px; height: 24px; }
 
-    /* --- Account Cards --- */
+    /* --- Account Cards & Card Carousel --- */
     .accounts-list { margin-top: 24px; display: flex; flex-direction: column; gap: 8px; }
     .account-card {
       background-color: var(--background-card); border-radius: var(--border-radius-l);
@@ -176,11 +180,11 @@
       display: flex; align-items: center; justify-content: center; flex-shrink: 0;
     }
     .account-icon svg { width: 24px; height: 24px; }
-    .account-details { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; }
+    .account-details { flex-grow: 1; display: flex; justify-content: space-between; align-items: center; overflow: hidden; }
     .account-name { font-size: 15px; font-weight: 600; }
     .account-balance { font-size: 13px; color: var(--text-secondary); white-space: nowrap; }
     .account-card.main-account .account-details { align-items: flex-start; }
-    .account-info-left { display: flex; flex-direction: column; gap: 12px; }
+    .account-info-left { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
     .account-info-right { text-align: right; }
     .main-account .account-balance { font-size: 16px; font-weight: 600; color: var(--text-primary); }
     .notification-badge {
@@ -188,33 +192,39 @@
       font-size: 11px; font-weight: 600; padding: 2px 6px;
       border-radius: 10px; margin-left: 8px;
     }
-    .mini-cards { display: flex; }
-    .mini-card {
-      width: 42px; height: 28px; border-radius: 4px; border: 1px solid rgba(0,0,0,0.1);
-      display: flex; align-items: flex-end; justify-content: flex-end;
-      padding: 2px 4px; font-size: 8px; font-weight: 600;
+    .card-carousel {
+        display: flex;
+        overflow-x: auto;
+        padding-bottom: 8px;
+        margin-right: -16px; /* Allow scroll to edge */
+        -ms-overflow-style: none; /* IE and Edge */
+        scrollbar-width: none; /* Firefox */
     }
-    .mini-card:not(:first-child) { margin-left: -12px; }
-    .mini-card-yellow { background-color: var(--accent-yellow); color: var(--text-primary); }
-    .mini-card-black { background-color: #333; color: white; }
+    .card-carousel::-webkit-scrollbar { display: none; }
+    .card-carousel-item {
+        flex: 0 0 80px;
+        height: 50px;
+        margin-right: 8px;
+        border-radius: 6px;
+        overflow: hidden;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        transition: transform 0.2s ease;
+    }
+    .card-carousel-item:active { transform: scale(0.97); }
+    .card-carousel-item img { width: 100%; height: 100%; object-fit: cover; }
+
 
     /* --- Payments Screen --- */
     .payments-header { padding: 16px; background-color: var(--background-main); }
     .payments-header h1 { font-size: 28px; margin-bottom: 16px; }
     .section { background-color: var(--background-card); border-radius: var(--border-radius-l); padding: 16px; margin-top: 12px; }
-    .section.animate-in {
-        opacity: 0;
-        animation: fadeInUp 0.5s forwards;
-    }
+    .section.animate-in { opacity: 0; animation: fadeInUp 0.5s forwards; }
     .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
     .section-title { font-size: 20px; font-weight: 700; }
     .section-action { font-size: 16px; color: var(--accent-blue); text-decoration: none; font-weight: 500; cursor: pointer; }
     .horizontal-scroll { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 8px; margin: 0 -16px; padding: 0 16px; }
     .horizontal-scroll::-webkit-scrollbar { display: none; }
-    .favorite-item, .contact-bubble, .service-item, .single-action-btn, .payment-action-btn { 
-      transition: transform var(--transition-fast); 
-      cursor: pointer;
-    }
+    .favorite-item, .contact-bubble, .service-item, .single-action-btn, .payment-action-btn { transition: transform var(--transition-fast); cursor: pointer; }
     .favorite-item:active, .contact-bubble:active, .service-item:active, .single-action-btn:active, .payment-action-btn:active { transform: scale(0.95); }
     .favorite-item { display: flex; flex-direction: column; align-items: center; gap: 8px; width: 64px; text-decoration: none; color: var(--text-primary); }
     .favorite-icon { width: 56px; height: 56px; border-radius: 50%; display: flex; align-items: center; justify-content: center; background-color: #F5F5F7; }
@@ -236,6 +246,69 @@
     .single-action-section { padding: 0; }
     .single-action-btn { display: flex; align-items: center; gap: 12px; font-size: 16px; font-weight: 600; padding: 16px; }
     .single-action-btn .service-icon { background-color: #EBF1FB; }
+
+    /* --- Profile Modal --- */
+    .modal-overlay {
+      position: absolute; inset: 0;
+      background-color: var(--background-overlay);
+      z-index: 1000;
+      opacity: 0;
+      transition: opacity var(--transition-modal);
+    }
+    .modal-overlay.open { opacity: 1; }
+    .modal-container {
+      position: absolute; bottom: 0; left: 0; right: 0;
+      background-color: var(--background-main);
+      border-top-left-radius: var(--border-radius-xl);
+      border-top-right-radius: var(--border-radius-xl);
+      z-index: 1001;
+      max-height: 85%;
+      padding: 16px 16px 40px 16px;
+      transform: translateY(100%);
+      transition: transform var(--transition-modal);
+    }
+    .modal-container.open { transform: translateY(0); }
+    .modal-handle {
+      width: 40px; height: 4px; border-radius: 2px;
+      background-color: var(--text-tertiary);
+      margin: 0 auto 16px auto;
+    }
+    .modal-content { overflow-y: auto; max-height: calc(85vh - 60px); }
+    .modal-section { margin-bottom: 24px; }
+    .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; }
+    .input-group { display: flex; flex-direction: column; gap: 4px; }
+    .input-group label { font-size: 14px; color: var(--text-secondary); }
+    .input-group input {
+      background-color: var(--background-card);
+      border: 1px solid var(--background-input);
+      border-radius: var(--border-radius-m);
+      padding: 12px; font-size: 16px; outline: none;
+      transition: border-color 0.2s ease;
+    }
+    .input-group input:focus { border-color: var(--accent-blue); }
+    .grid-selector { display: grid; grid-template-columns: repeat(auto-fill, minmax(80px, 1fr)); gap: 8px; }
+    .grid-item {
+      aspect-ratio: 1.58; /* Card ratio */
+      border-radius: 6px; border: 2px solid transparent;
+      overflow: hidden; cursor: pointer; transition: border-color 0.2s ease;
+    }
+    .grid-item.selected { border-color: var(--accent-blue); }
+    .grid-item img { width: 100%; height: 100%; object-fit: cover; }
+    .modal-button {
+      background-color: var(--accent-blue); color: white;
+      border: none; border-radius: var(--border-radius-m);
+      padding: 14px; font-size: 16px; font-weight: 600;
+      width: 100%; cursor: pointer; margin-top: 12px;
+      transition: background-color 0.2s ease;
+    }
+    .modal-button:active { background-color: #3a7ac2; }
+    .contact-list { display: flex; flex-direction: column; gap: 8px; }
+    .contact-item { display: flex; align-items: center; gap: 12px; background-color: var(--background-card); padding: 8px; border-radius: var(--border-radius-m); }
+    .contact-item-avatar { width: 40px; height: 40px; border-radius: 50%; background-color: #eee; display: flex; align-items: center; justify-content: center; font-weight: 600; }
+    .contact-item-info { flex-grow: 1; }
+    .contact-item-name { font-weight: 600; }
+    .contact-item-banks { display: flex; gap: 4px; margin-top: 4px; }
+    .contact-item-banks img { width: 18px; height: 18px; border-radius: 50%; }
 
     /* --- Bottom Nav --- */
     .bottom-nav {
@@ -286,9 +359,7 @@
     .page-container.slide-in-left { animation-name: slideInFromLeft; }
     .page-container.slide-out-right { animation-name: slideOutToRight; }
 
-    .account-card.animate-in, .mini-card.animate-in { opacity: 0; animation-fill-mode: forwards; }
-    .account-card.animate-in { animation-name: fadeInUp; animation-duration: 0.5s; }
-    .mini-card.animate-in { animation-name: slideInRight; animation-duration: 0.5s; }
+    .account-card.animate-in { opacity: 0; animation-fill-mode: forwards; animation-name: fadeInUp; animation-duration: 0.5s; }
     
     .pull-to-refresh-indicator {
       position: absolute; top: 0; left: 0; right: 0;

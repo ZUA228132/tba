@@ -1,9 +1,45 @@
 export type TabName = 'main' | 'payments' | 'city' | 'chat' | 'more';
 
-export interface MiniCardData {
+export interface Card {
+  id: string;
+  designUrl: string;
+}
+
+export interface Account {
   id: number;
-  type: 'black' | 'yellow';
-  last4: string;
+  main: boolean;
+  name: string;
+  balance: string;
+  badge?: string;
+  icon: React.ReactElement;
+  iconBg: string;
+  cards: Card[];
+}
+
+export interface CashbackPartner {
+    id: string;
+    logoUrl: string;
+}
+
+export interface Bank {
+    id: string;
+    name: string;
+    logoUrl: string;
+}
+
+export interface FavoriteContact {
+    id: number;
+    name: string;
+    initials: string;
+    banks: Bank[];
+}
+
+export interface UserData {
+    name: string;
+    accounts: Account[];
+    cashbackPartners: CashbackPartner[];
+    cashbackProgress: { color: string; percentage: number }[];
+    favoriteContacts: FavoriteContact[];
 }
 
 export interface Toast {

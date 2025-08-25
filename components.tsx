@@ -1,5 +1,27 @@
-import React, { useEffect, useContext, createContext, useState } from 'react';
-import type { Toast, ToastContextType, MiniCardData, TabName } from './types.ts';
+import React, { useEffect, useContext, createContext, useState, useRef } from 'react';
+import type { Toast, ToastContextType, TabName, UserData, Card, Account, CashbackPartner, FavoriteContact, Bank } from './types.ts';
+
+// --- DATA ---
+const cardDesigns = [
+    'https://i.imgur.com/QrZADtb.png',
+    'https://i.imgur.com/3MNT66B.png',
+    'https://i.imgur.com/fmnHpJs.png',
+    'https://i.imgur.com/kt7QVs5.png'
+];
+const cashbackIcons = [
+    'https://i.imgur.com/uplZIqA.png',
+    'https://i.imgur.com/EzmYEEI.png',
+    'https://i.imgur.com/bGshFAV.png'
+];
+const allBanks: Bank[] = [
+    { id: 't-bank', name: 'Т-Банк', logoUrl: 'https://336118.selcdn.ru/Gutsy-Culebra/products/T-Bank-Seller-Logo.png' },
+    { id: 'sber', name: 'Сбер', logoUrl: 'https://i.pinimg.com/1200x/92/ae/48/92/ae481096cfc19a71486694b627e11b.jpg' },
+    { id: 'vtb', name: 'ВТБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/VTB_Logo_2018.svg/1200px-VTB_Logo_2018.png' },
+    { id: 'psb', name: 'ПСБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/ru/2/21/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%9F%D0%A1%D0%91.png' },
+    { id: 'alfa', name: 'Альфа-Банк', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_alfa-bank.svg/2422px-Logo_alfa-bank.png' },
+    { id: 'raif', name: 'Райффайзен', logoUrl: 'https://cdn.worldvectorlogo.com/logos/raiffeisen-1.svg' },
+];
+
 
 // --- TOAST NOTIFICATION SYSTEM ---
 const ToastContext = createContext<ToastContextType | null>(null);
@@ -41,10 +63,10 @@ const ToastContainer: React.FC<{ toasts: Toast[], removeToast: (id: number) => v
 // --- SVG ICON COMPONENTS ---
 export const SearchIcon = () => <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M13.294 14.706a8 8 0 111.414-1.414l4.99 5a1 1 0 01-1.414 1.414l-4.99-5zM10 16a6 6 0 100-12 6 6 0 000 12z" fill="#858D97"/></svg>;
 export const ChevronDownIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-export const TransferIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M14 6v3h-3v2h3v3l4-4-4-4zm-4 5H7V9l-4 4 4 4v-3h3v-2z"/></svg>;
-export const TopUpIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12 4c-4.41 0-8 3.59-8 8s3.59 8 8 8 8-3.59 8-8-3.59-8-8-8zm-1 12H9v-4H7l4-5 4 5h-2v4h-2v-4z" opacity=".3"/><path fill="currentColor" d="M11 16h2v-4h2l-4-5-4 5h2z"/></svg>;
-export const BetweenAccountsIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M17 17H7v-3l-4 4 4 4v-3h12v-2zm-2-11H5v3l-4-4 4-4v3h12v2z"/></svg>;
-export const QRIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M3 11h8V3H3v8zm2-6h4v4H5V5zM3 21h8v-8H3v8zm2-6h4v4H5v-4zm8-12v8h8V3h-8zm6 6h-4V5h4v4zm-6 8h8v-8h-8v8zm2-6h4v4h-4v-4z"/></svg>;
+export const TransferIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8.7,13.3l-1.4,1.4l4.6,4.6l4.6-4.6l-1.4-1.4L12,16.2L8.7,13.3z M15.3,10.7l1.4-1.4l-4.6-4.6l-4.6,4.6l1.4,1.4L12,7.8L15.3,10.7z"/></svg>;
+export const TopUpIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,5.8L15.2,9l-1.4,1.4L12,8.6L10.2,10.4L8.8,9L12,5.8z M12,18.2l-3.2-3.2l1.4-1.4l1.8,1.8l1.8-1.8l1.4,1.4L12,18.2z"/></svg>;
+export const BetweenAccountsIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M14.6,8.8L12,6.2L9.4,8.8l-1.4-1.4l4-4l4,4L14.6,8.8z M9.4,15.2L12,17.8l2.6-2.6l1.4,1.4l-4,4l-4-4L9.4,15.2z"/></svg>;
+export const QRIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M9.5,13.5h-4v-4h4V13.5z M8,11.5h-1v1h1V11.5z M13.5,9.5h-4v-4h4V9.5z M12,7.5h-1v1h1V7.5z M18.5,9.5h-4v-4h4V9.5z M17,7.5h-1v1h1V7.5z M18.5,18.5h-4v-4h4V18.5z M17,16.5h-1v1h1V16.5z M4,4v7h7V4H4z M9,9H6V6h3V9z M4,13v7h7v-7H4z M9,18H6v-3h3V18z M13,4v7h7V4H13z M18,9h-3V6h3V9z M13,13v7h7v-7H13z M18,18h-3v-3h3V18z"/></svg>;
 export const RubleIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M13.5 11.5c1.1 0 2-.9 2-2s-.9-2-2-2h-3v4h3zm0 1h-3v2.5H9V18h1.5v1h2v-1H14c1.1 0 2-.9 2-2s-.9-2-2-2zM6 3h9c2.2 0 4 1.8 4 4s-1.8 4-4 4h-2.5v2H14c2.2 0 4 1.8 4 4s-1.8 4-4 4H6v-2h9c1.1 0 2-.9 2-2s-.9-2-2-2h-2.5v-2H9c-1.1 0-2-.9-2-2s.9-2 2-2h2.5V5H6V3z"/></svg>;
 export const ThreeDotsIcon = () => <svg viewBox="0 0 24 24" fill="white"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>;
 export const TinkoffIcon = () => <svg viewBox="0 0 24 24" fill="#FDD900"><path d="M20.9 6.95v-.17c0-1.1-.9-2-2-2h-1.45l-3.37 4.1-.73-4.1h-1.45v10.4h1.94v-6.23l4.13 6.23h1.94V6.95zM4.14 15.18V4.78h7.94v1.44H6.08v3.08h5.2v1.44h-5.2v4.44h-1.94z"/></svg>;
@@ -64,11 +86,11 @@ export const RefreshIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox
 
 
 // --- UI COMPONENTS ---
-export const Header: React.FC<{ onAction: (action: string) => void }> = ({ onAction }) => (
+export const Header: React.FC<{ name: string; onProfileClick: () => void; isProfileOpen: boolean; onAction: (action: string) => void }> = ({ name, onProfileClick, isProfileOpen, onAction }) => (
     <header className="app-header">
-      <div className="user-profile">
+      <div className="user-profile" onClick={onProfileClick}>
         <div className="avatar"></div>
-        <div className="user-name">Артем <ChevronDownIcon /></div>
+        <div className={`user-name ${isProfileOpen ? 'open' : ''}`}>{name} <ChevronDownIcon /></div>
       </div>
       <div className="search-bar">
         <SearchIcon />
@@ -84,24 +106,19 @@ export const Stories: React.FC<{ onAction: (action: string) => void }> = ({ onAc
     </section>
 );
 
-export const InfoCards: React.FC<{ onAction: (action: string) => void }> = ({ onAction }) => (
+export const InfoCards: React.FC<{ partners: CashbackPartner[], progress: { color: string, percentage: number }[], onAction: (action: string) => void }> = ({ partners, progress, onAction }) => (
     <section className="info-cards-section">
         <div className="info-card" onClick={() => onAction('Перейти к операциям')}>
             <h3>Все операции</h3>
             <p className="amount">Трат в августе 339 708 ₽</p>
             <div className="progress-bar">
-                <div style={{ width: '40%', backgroundColor: '#8E44AD' }}></div>
-                <div style={{ width: '30%', backgroundColor: '#3498DB' }}></div>
-                <div style={{ width: '20%', backgroundColor: '#F1C40F' }}></div>
-                <div style={{ width: '10%', backgroundColor: '#E74C3C' }}></div>
+                {progress.map((p, i) => <div key={i} style={{ width: `${p.percentage}%`, backgroundColor: p.color }}></div>)}
             </div>
         </div>
         <div className="info-card" onClick={() => onAction('Перейти к бонусам')}>
             <h3>Кэшбэк и бонусы</h3>
             <div className="bonus-logos">
-                <img src="https://acdn.tinkoff.ru/static/documents/ae25d625-b829-478e-8a2b-160a0f058088.svg" alt="Ozon" />
-                <img src="https://acdn.tinkoff.ru/static/documents/0a282bc7-4c3e-4228-a5b6-7f871578536f.svg" alt="Yandex" />
-                <img src="https://acdn.tinkoff.ru/static/documents/6c53d1e3-3b60-4660-823d-4c31d5f2f516.svg" alt="Aviasales" />
+                {partners.map(p => <img key={p.id} src={p.logoUrl} alt="bonus" />)}
             </div>
         </div>
     </section>
@@ -109,10 +126,10 @@ export const InfoCards: React.FC<{ onAction: (action: string) => void }> = ({ on
 
 export const QuickActions: React.FC<{ onAction: (action: string) => void }> = ({ onAction }) => {
     const actions = [
-        { label: 'Перевести по телефону', icon: <TransferIcon />, color: '#ECF4FE' },
-        { label: 'Пополнить', icon: <TopUpIcon />, color: '#E8F5E9' },
-        { label: 'Между счетами', icon: <BetweenAccountsIcon />, color: '#F3E5F5' },
-        { label: 'Сканировать QR-код', icon: <QRIcon />, color: '#FFF3E0' },
+        { label: 'Перевести по телефону', icon: <TransferIcon />, color: '#F0F0F5' },
+        { label: 'Пополнить', icon: <TopUpIcon />, color: '#F0F0F5' },
+        { label: 'Между счетами', icon: <BetweenAccountsIcon />, color: '#F0F0F5' },
+        { label: 'Сканировать QR-код', icon: <QRIcon />, color: '#F0F0F5' },
     ];
     return (
         <section className="quick-actions">
@@ -126,13 +143,17 @@ export const QuickActions: React.FC<{ onAction: (action: string) => void }> = ({
     );
 };
 
-export const MiniCard: React.FC<{ card: MiniCardData, isAnimated: boolean, animationIndex: number }> = ({ card, isAnimated, animationIndex }) => (
-    <div className={`mini-card mini-card-${card.type} ${isAnimated ? 'animate-in' : ''}`} style={{ animationDelay: `${200 + animationIndex * 100}ms` }}>
-      {card.last4}
+export const CardCarousel: React.FC<{ cards: Card[], onAction: (action: string) => void }> = ({ cards, onAction }) => (
+    <div className="card-carousel">
+        {cards.map(card => (
+            <div key={card.id} className="card-carousel-item" onClick={() => onAction(`Открыть карту ${card.id}`)}>
+                <img src={card.designUrl} alt="Bank Card" />
+            </div>
+        ))}
     </div>
 );
 
-export const AccountCard: React.FC<{ account: any, miniCards?: MiniCardData[], isAnimated: boolean, animationIndex: number, onAction: (action: string) => void }> = ({ account, miniCards, isAnimated, animationIndex, onAction }) => (
+export const AccountCard: React.FC<{ account: Account, isAnimated: boolean, animationIndex: number, onAction: (action: string) => void }> = ({ account, isAnimated, animationIndex, onAction }) => (
     <div 
         className={`account-card ${account.main ? 'main-account' : ''} ${isAnimated ? 'animate-in' : ''}`}
         style={{ animationDelay: `${animationIndex * 75}ms` }}
@@ -144,7 +165,7 @@ export const AccountCard: React.FC<{ account: any, miniCards?: MiniCardData[], i
         <div className="account-details">
             <div className="account-info-left">
                 <span className="account-name">{account.name}</span>
-                {account.main && <div className="mini-cards">{miniCards?.map((c, i) => <MiniCard key={c.id} card={c} isAnimated={isAnimated} animationIndex={i} />)}</div>}
+                {account.main && <CardCarousel cards={account.cards} onAction={onAction} />}
             </div>
              <div className="account-info-right">
                 <span className="account-balance">{account.balance}</span>
@@ -153,6 +174,154 @@ export const AccountCard: React.FC<{ account: any, miniCards?: MiniCardData[], i
         </div>
     </div>
 );
+
+export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, userData: UserData, setUserData: React.Dispatch<React.SetStateAction<UserData>> }> = ({ isOpen, onClose, userData, setUserData }) => {
+    const [tempName, setTempName] = useState(userData.name);
+    const [selectedDesign, setSelectedDesign] = useState(cardDesigns[0]);
+    const addToast = useToast();
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        setTempName(userData.name);
+    }, [userData.name, isOpen]);
+
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setTempName(e.target.value);
+    };
+
+    const saveName = () => {
+        setUserData(prev => ({ ...prev, name: tempName }));
+        addToast('Имя обновлено!');
+    };
+    
+    const addNewAccount = () => {
+        setUserData(prev => {
+            const newAccount: Account = {
+                id: Date.now(),
+                main: false,
+                name: "Новый счет",
+                balance: "0 ₽",
+                icon: <RubleIcon />,
+                iconBg: '#4A90E2',
+                cards: [{ id: `card-${Date.now()}`, designUrl: selectedDesign }]
+            };
+            return { ...prev, accounts: [...prev.accounts, newAccount] };
+        });
+        addToast('Новый счет добавлен!');
+    };
+    
+    const addContact = () => {
+         setUserData(prev => {
+             const newContact: FavoriteContact = {
+                id: Date.now(),
+                name: "Новый контакт",
+                initials: "НК",
+                banks: [allBanks[0], allBanks[1]]
+             };
+             return { ...prev, favoriteContacts: [...prev.favoriteContacts, newContact]}
+         });
+         addToast('Контакт добавлен! (В разработке)');
+    };
+
+    const changeCashbackIcons = () => {
+        setUserData(prev => ({
+            ...prev,
+            cashbackPartners: [
+                {id: '1', logoUrl: cashbackIcons[Math.floor(Math.random()*3)]},
+                {id: '2', logoUrl: cashbackIcons[Math.floor(Math.random()*3)]},
+                {id: '3', logoUrl: cashbackIcons[Math.floor(Math.random()*3)]},
+            ]
+        }));
+        addToast('Иконки кэшбэка изменены!');
+    };
+
+    const changeCashbackColors = () => {
+        const colors = ["#8E44AD", "#3498DB", "#F1C40F", "#E74C3C", "#2ECC71", "#E67E22"];
+        const newProgress = Array.from({length: 4}, () => ({
+            color: colors[Math.floor(Math.random() * colors.length)],
+            percentage: 25
+        }));
+        setUserData(prev => ({ ...prev, cashbackProgress: newProgress}));
+        addToast('Цвета бонусов изменены!');
+    }
+
+    // Close modal on outside click
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        };
+        if (isOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isOpen, onClose]);
+
+    if (!isOpen && !document.querySelector('.modal-overlay.open')) return null;
+
+    return (
+        <>
+            <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}></div>
+            <div ref={modalRef} className={`modal-container ${isOpen ? 'open' : ''}`}>
+                <div className="modal-handle"></div>
+                <div className="modal-content">
+                    {/* --- Change Name --- */}
+                    <div className="modal-section">
+                        <h3 className="modal-title">Профиль</h3>
+                        <div className="input-group">
+                            <label htmlFor="userName">Ваше имя</label>
+                            <input id="userName" type="text" value={tempName} onChange={handleNameChange} onBlur={saveName} />
+                        </div>
+                    </div>
+
+                    {/* --- Add Account --- */}
+                    <div className="modal-section">
+                        <h3 className="modal-title">Новый счет</h3>
+                        <p style={{marginBottom: '12px', fontSize: '14px', color: 'var(--text-secondary)'}}>Выберите дизайн карты</p>
+                        <div className="grid-selector">
+                            {cardDesigns.map(design => (
+                                <div key={design} className={`grid-item ${selectedDesign === design ? 'selected' : ''}`} onClick={() => setSelectedDesign(design)}>
+                                    <img src={design} alt="card design" />
+                                </div>
+                            ))}
+                        </div>
+                        <button className="modal-button" onClick={addNewAccount}>Создать счет</button>
+                    </div>
+
+                    {/* --- Customize Cashback --- */}
+                    <div className="modal-section">
+                        <h3 className="modal-title">Настройка бонусов</h3>
+                         <button className="modal-button" onClick={changeCashbackIcons} style={{marginBottom: '8px', backgroundColor: '#5856d6'}}>Сменить иконки кэшбэка</button>
+                        <button className="modal-button" onClick={changeCashbackColors} style={{backgroundColor: '#5ac8fa'}}>Сменить цвета бонусов</button>
+                    </div>
+
+                     {/* --- Favorite Contacts --- */}
+                    <div className="modal-section">
+                        <h3 className="modal-title">Избранные контакты</h3>
+                        <div className="contact-list">
+                            {userData.favoriteContacts.map(contact => (
+                                <div key={contact.id} className="contact-item">
+                                    <div className="contact-item-avatar">{contact.initials}</div>
+                                    <div className="contact-item-info">
+                                        <div className="contact-item-name">{contact.name}</div>
+                                        <div className="contact-item-banks">
+                                            {contact.banks.map(bank => <img key={bank.id} src={bank.logoUrl} alt={bank.name}/>)}
+                                        </div>
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                        <button className="modal-button" onClick={addContact} style={{backgroundColor: '#34c759'}}>Добавить контакт</button>
+                    </div>
+
+                </div>
+            </div>
+        </>
+    );
+};
 
 export const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
     <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingBottom: '80px' }}>
