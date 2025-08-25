@@ -8,7 +8,13 @@ import {
     HousingIcon, GovServicesIcon, CreditIcon, RequestMoneyIcon
 } from './components.tsx';
 
-export const MainScreen: React.FC<{ userData: UserData; setUserData: React.Dispatch<React.SetStateAction<UserData>>; onProfileClick: () => void; isProfileOpen: boolean; }> = ({ userData, setUserData, onProfileClick, isProfileOpen }) => {
+export const MainScreen: React.FC<{ 
+    userData: UserData; 
+    setUserData: React.Dispatch<React.SetStateAction<UserData>>; 
+    onProfileClick: () => void; 
+    isProfileOpen: boolean;
+    onHistoryClick: () => void;
+}> = ({ userData, setUserData, onProfileClick, isProfileOpen, onHistoryClick }) => {
     const handleAction = useActionHandler();
     const [isAnimated, setIsAnimated] = useState(false);
     const [isRefreshing, setIsRefreshing] = useState(false);
@@ -93,7 +99,7 @@ export const MainScreen: React.FC<{ userData: UserData; setUserData: React.Dispa
                    {/* <RefreshIcon /> */}
                 </div>
                 <Stories onAction={handleAction} />
-                <InfoCards partners={userData.cashbackPartners} progress={userData.cashbackProgress} onAction={handleAction} />
+                <InfoCards partners={userData.cashbackPartners} progress={userData.cashbackProgress} onHistoryClick={onHistoryClick} onAction={handleAction} />
                 <QuickActions onAction={handleAction} />
                 <div className="accounts-list">
                     {userData.accounts.map((acc, index) => (

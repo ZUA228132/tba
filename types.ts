@@ -35,12 +35,25 @@ export interface FavoriteContact {
     banks: Bank[];
 }
 
+export type TransactionCategory = 'food' | 'shopping' | 'transport' | 'health' | 'income';
+
+export interface Transaction {
+  id: string;
+  iconBg: string;
+  category: TransactionCategory;
+  name: string;
+  description: string;
+  amount: number;
+  date: string; // ISO 8601 format: "YYYY-MM-DDTHH:mm:ss.sssZ"
+}
+
 export interface UserData {
     name: string;
     accounts: Account[];
     cashbackPartners: CashbackPartner[];
     cashbackProgress: { color: string; percentage: number }[];
     favoriteContacts: FavoriteContact[];
+    transactions: Transaction[];
 }
 
 export interface Toast {

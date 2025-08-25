@@ -1,12 +1,12 @@
 import React, { useEffect, useContext, createContext, useState, useRef } from 'react';
-import type { Toast, ToastContextType, TabName, UserData, Card, Account, CashbackPartner, FavoriteContact, Bank } from './types.ts';
+import type { Toast, ToastContextType, TabName, UserData, Card, Account, CashbackPartner, FavoriteContact, Bank, Transaction, TransactionCategory } from './types.ts';
 
 // --- DATA ---
 const cardDesigns = [
-    'https://i.imgur.com/QrZADtb.png',
-    'https://i.imgur.com/3MNT66B.png',
-    'https://i.imgur.com/fmnHpJs.png',
-    'https://i.imgur.com/kt7QVs5.png'
+    'https://i.imgur.com/P8Cp1y6.jpeg', // Airlanes
+    'https://i.imgur.com/QWaK5r7.jpeg', // Alliexpress
+    'https://i.imgur.com/Z6uwYH7.jpeg', // Black
+    'https://i.imgur.com/jznOaL1.jpeg'  // Platinum
 ];
 const cashbackIcons = [
     'https://i.imgur.com/uplZIqA.png',
@@ -15,7 +15,7 @@ const cashbackIcons = [
 ];
 const allBanks: Bank[] = [
     { id: 't-bank', name: 'Т-Банк', logoUrl: 'https://336118.selcdn.ru/Gutsy-Culebra/products/T-Bank-Seller-Logo.png' },
-    { id: 'sber', name: 'Сбер', logoUrl: 'https://i.pinimg.com/1200x/92/ae/48/92/ae481096cfc19a71486694b627e11b.jpg' },
+    { id: 'sber', name: 'Сбер', logoUrl: 'https://i.imgur.com/ZXP1II7.jpeg' },
     { id: 'vtb', name: 'ВТБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/7/7c/VTB_Logo_2018.svg/1200px-VTB_Logo_2018.png' },
     { id: 'psb', name: 'ПСБ', logoUrl: 'https://upload.wikimedia.org/wikipedia/ru/2/21/%D0%9B%D0%BE%D0%B3%D0%BE%D1%82%D0%B8%D0%BF_%D0%9F%D0%A1%D0%91.png' },
     { id: 'alfa', name: 'Альфа-Банк', logoUrl: 'https://upload.wikimedia.org/wikipedia/commons/thumb/a/a6/Logo_alfa-bank.svg/2422px-Logo_alfa-bank.png' },
@@ -63,16 +63,14 @@ const ToastContainer: React.FC<{ toasts: Toast[], removeToast: (id: number) => v
 // --- SVG ICON COMPONENTS ---
 export const SearchIcon = () => <svg width="20" height="20" viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg"><path fillRule="evenodd" clipRule="evenodd" d="M13.294 14.706a8 8 0 111.414-1.414l4.99 5a1 1 0 01-1.414 1.414l-4.99-5zM10 16a6 6 0 100-12 6 6 0 000 12z" fill="#858D97"/></svg>;
 export const ChevronDownIcon = () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M6 9L12 15L18 9" stroke="#1A1A1A" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>;
-export const TransferIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M8.7,13.3l-1.4,1.4l4.6,4.6l4.6-4.6l-1.4-1.4L12,16.2L8.7,13.3z M15.3,10.7l1.4-1.4l-4.6-4.6l-4.6,4.6l1.4,1.4L12,7.8L15.3,10.7z"/></svg>;
-export const TopUpIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M12,5.8L15.2,9l-1.4,1.4L12,8.6L10.2,10.4L8.8,9L12,5.8z M12,18.2l-3.2-3.2l1.4-1.4l1.8,1.8l1.8-1.8l1.4,1.4L12,18.2z"/></svg>;
+export const PlusIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>;
 export const BetweenAccountsIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M14.6,8.8L12,6.2L9.4,8.8l-1.4-1.4l4-4l4,4L14.6,8.8z M9.4,15.2L12,17.8l2.6-2.6l1.4,1.4l-4,4l-4-4L9.4,15.2z"/></svg>;
 export const QRIcon = () => <svg viewBox="0 0 24 24"><path fill="currentColor" d="M9.5,13.5h-4v-4h4V13.5z M8,11.5h-1v1h1V11.5z M13.5,9.5h-4v-4h4V9.5z M12,7.5h-1v1h1V7.5z M18.5,9.5h-4v-4h4V9.5z M17,7.5h-1v1h1V7.5z M18.5,18.5h-4v-4h4V18.5z M17,16.5h-1v1h1V16.5z M4,4v7h7V4H4z M9,9H6V6h3V9z M4,13v7h7v-7H4z M9,18H6v-3h3V18z M13,4v7h7V4H13z M18,9h-3V6h3V9z M13,13v7h7v-7H13z M18,18h-3v-3h3V18z"/></svg>;
-export const RubleIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M13.5 11.5c1.1 0 2-.9 2-2s-.9-2-2-2h-3v4h3zm0 1h-3v2.5H9V18h1.5v1h2v-1H14c1.1 0 2-.9 2-2s-.9-2-2-2zM6 3h9c2.2 0 4 1.8 4 4s-1.8 4-4 4h-2.5v2H14c2.2 0 4 1.8 4 4s-1.8 4-4 4H6v-2h9c1.1 0 2-.9 2-2s-.9-2-2-2h-2.5v-2H9c-1.1 0-2-.9-2-2s.9-2 2-2h2.5V5H6V3z"/></svg>;
+export const RubleIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M11.5 5h-2v6H8v2h1.5v2H8v2h1.5v3h2v-3H14v-2h-2.5v-2H14a3 3 0 0 0 0-6h-2.5zm0 2h2.5a1 1 0 0 1 0 2H11.5z"/></svg>;
 export const ThreeDotsIcon = () => <svg viewBox="0 0 24 24" fill="white"><circle cx="5" cy="12" r="2"></circle><circle cx="12" cy="12" r="2"></circle><circle cx="19" cy="12" r="2"></circle></svg>;
 export const TransfersIcon = () => <svg viewBox="0 0 24 24"><path fill="white" d="M20 18v-2h-8v2h8zm-8-3.5h8v-2h-8v2zM4 14.5v-11h14v11h-2V7H6v5.5H4z"/></svg>;
 export const TinkoffIcon = () => <svg viewBox="0 0 24 24" fill="#FDD900"><path d="M20.9 6.95v-.17c0-1.1-.9-2-2-2h-1.45l-3.37 4.1-.73-4.1h-1.45v10.4h1.94v-6.23l4.13 6.23h1.94V6.95zM4.14 15.18V4.78h7.94v1.44H6.08v3.08h5.2v1.44h-5.2v4.44h-1.94z"/></svg>;
 export const MobileIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M15.5 1h-8C6.12 1 5 2.12 5 3.5v17C5 21.88 6.12 23 7.5 23h8c1.38 0 2.5-1.12 2.5-2.5v-17C18 2.12 16.88 1 15.5 1zm-4 21c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4.5-4H7V4h9v14z"/></svg>;
-export const PlusIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>;
 export const BillIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-8 12H9v-2h2v2zm0-4H9V9h2v2zm0-4H9V5h2v2zm4 8h-2v-2h2v2zm0-4h-2V9h2v2zm0-4h-2V5h2v2zm4 8h-2v-2h2v2zm0-4h-2V9h2v2z"/></svg>;
 export const PhoneIcon = () => <svg viewBox="0 0 24 24"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.02.74-.25 1.02l-2.2 2.2z"></path></svg>;
 export const ArrowRightIcon = () => <svg viewBox="0 0 24 24"><path d="M10 17l5-5-5-5v10z"></path></svg>;
@@ -84,6 +82,24 @@ export const GovServicesIcon = () => <svg viewBox="0 0 24 24" fill="currentColor
 export const CreditIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 13v8h8v-8h-8zM3 21h8v-8H3v8zM3 3v8h8V3H3zm13.66-1.31L11 7.34 16.66 13l5.66-5.66-5.66-5.65z"/></svg>;
 export const RequestMoneyIcon = () => <svg viewBox="0 0 24 24" fill="#4991F8"><path d="M11 15h2v2h-2v-2zm0-8h2v6h-2V7zm.99-5C6.47 2 2 6.48 2 12s4.47 10 9.99 10C17.52 22 22 17.52 22 12S17.52 2 11.99 2zM12 20c-4.42 0-8-3.58-8-8s3.58-8 8-8 8 3.58 8 8-3.58 8-8 8z"/></svg>;
 export const RefreshIcon = () => <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"></path></svg>;
+const TrashIcon = () => <svg viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"></path></svg>;
+// Transaction Icons
+const FoodIcon = () => <svg viewBox="0 0 24 24"><path d="M11 9H9V2H7v7H5V2H3v7c0 2.12 1.66 3.84 3.75 3.97V22h2.5v-9.03C11.34 12.84 13 11.12 13 9V2h-2v7zm5-3v8h2.5v8H21V2c-2.76 0-5 2.24-5 4z"/></svg>;
+const ShoppingIcon = () => <svg viewBox="0 0 24 24"><path d="M18 6h-2c0-2.21-1.79-4-4-4S8 3.79 8 6H6c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-6-2c1.1 0 2 .9 2 2h-4c0-1.1.9-2 2-2zm6 16H6V8h12v12z"/></svg>;
+const TransportIcon = () => <svg viewBox="0 0 24 24"><path d="M20 15.5c-1.25 0-2.45-.2-3.57-.57-.35-.11-.74-.02-1.02.24l-2.2 2.2c-2.83-1.44-5.15-3.75-6.59-6.59l2.2-2.2c.28-.28.36-.67.25-1.02C8.2 6.45 8 5.25 8 4c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1 0 9.39 7.61 17 17 17 .55 0 1-.45 1-1v-3.5c0-.55-.45-1-1-1z"/></svg>;
+const HealthIcon = () => <svg viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 16H6v-3h12v3zm0-5H6V8h12v6z"/></svg>;
+const IncomeIcon = () => <svg viewBox="0 0 24 24"><path d="M7 14l5-5 5 5H7z"/></svg>;
+
+const TransactionIcon: React.FC<{ category: TransactionCategory }> = ({ category }) => {
+    switch (category) {
+        case 'food': return <FoodIcon />;
+        case 'shopping': return <ShoppingIcon />;
+        case 'transport': return <TransportIcon />;
+        case 'health': return <HealthIcon />;
+        case 'income': return <IncomeIcon />;
+        default: return null;
+    }
+};
 
 
 // --- UI COMPONENTS ---
@@ -107,9 +123,9 @@ export const Stories: React.FC<{ onAction: (action: string) => void }> = ({ onAc
     </section>
 );
 
-export const InfoCards: React.FC<{ partners: CashbackPartner[], progress: { color: string, percentage: number }[], onAction: (action: string) => void }> = ({ partners, progress, onAction }) => (
+export const InfoCards: React.FC<{ partners: CashbackPartner[], progress: { color: string, percentage: number }[], onHistoryClick: () => void, onAction: (action: string) => void }> = ({ partners, progress, onHistoryClick, onAction }) => (
     <section className="info-cards-section">
-        <div className="info-card" onClick={() => onAction('Перейти к операциям')}>
+        <div className="info-card" onClick={onHistoryClick}>
             <h3>Все операции</h3>
             <p className="amount">Трат в августе 339 708 ₽</p>
             <div className="progress-bar">
@@ -127,17 +143,17 @@ export const InfoCards: React.FC<{ partners: CashbackPartner[], progress: { colo
 
 export const QuickActions: React.FC<{ onAction: (action: string) => void }> = ({ onAction }) => {
     const actions = [
-        { label: 'Перевести по телефону', icon: <TransferIcon />, color: 'rgba(52, 199, 89, 0.15)' },
-        { label: 'Пополнить', icon: <TopUpIcon />, color: 'rgba(88, 86, 214, 0.15)' },
-        { label: 'Между счетами', icon: <BetweenAccountsIcon />, color: 'rgba(0, 122, 255, 0.15)' },
-        { label: 'Сканировать QR-код', icon: <QRIcon />, color: 'rgba(255, 149, 0, 0.15)' },
+        { label: 'Перевести по телефону', icon: <img src="https://i.imgur.com/29F5tp2.png" alt="transfer"/>, className: 'action-button-transfer' },
+        { label: 'Пополнить Зарплатная', icon: <PlusIcon /> },
+        { label: 'Между счетами', icon: <BetweenAccountsIcon /> },
+        { label: 'Сканировать QR-код', icon: <QRIcon /> },
     ];
     return (
         <section className="quick-actions">
             {actions.map(action => (
-                <a onClick={() => onAction(action.label)} className="action-button" key={action.label}>
-                    <div className="icon-wrapper" style={{ backgroundColor: action.color }}>{action.icon}</div>
-                    {action.label}
+                <a onClick={() => onAction(action.label)} className={`action-button ${action.className || ''}`} key={action.label}>
+                    <div className="icon-wrapper">{action.icon}</div>
+                    <span>{action.label}</span>
                 </a>
             ))}
         </section>
@@ -310,12 +326,21 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
          addToast('Контакт сохранен!');
     };
 
-    const changeCashbackIcons = () => {
+    const handleDeleteContact = (contactId: number) => {
         setUserData(prev => ({
             ...prev,
-            cashbackPartners: prev.cashbackPartners.map(p => ({
+            favoriteContacts: prev.favoriteContacts.filter(contact => contact.id !== contactId)
+        }));
+        addToast('Контакт удален');
+    };
+
+    const changeCashbackIcons = () => {
+        const shuffledIcons = [...cashbackIcons].sort(() => 0.5 - Math.random());
+        setUserData(prev => ({
+            ...prev,
+            cashbackPartners: prev.cashbackPartners.map((p, i) => ({
                 ...p,
-                logoUrl: cashbackIcons[Math.floor(Math.random()*cashbackIcons.length)]
+                logoUrl: shuffledIcons[i % shuffledIcons.length]
             }))
         }));
         addToast('Иконки кэшбэка изменены!');
@@ -323,25 +348,18 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
 
     const changeCashbackColors = () => {
         const colors = ["#8E44AD", "#3498DB", "#F1C40F", "#E74C3C", "#2ECC71", "#E67E22"];
-        const newProgress = Array.from({length: 4}, () => ({
-            color: colors[Math.floor(Math.random() * colors.length)],
-            percentage: 25
+        const shuffledColors = [...colors].sort(() => 0.5 - Math.random());
+        setUserData(prev => ({
+             ...prev, 
+             cashbackProgress: prev.cashbackProgress.map((p, i) => ({
+                ...p,
+                color: shuffledColors[i % shuffledColors.length]
+             }))
         }));
-        setUserData(prev => ({ ...prev, cashbackProgress: newProgress}));
         addToast('Цвета бонусов изменены!');
     }
 
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-                onClose();
-            }
-        };
-        if (isOpen) document.addEventListener('mousedown', handleClickOutside);
-        return () => document.removeEventListener('mousedown', handleClickOutside);
-    }, [isOpen, onClose]);
-
-    if (!isOpen && !document.querySelector('.modal-overlay.open')) return null;
+    if (!isOpen) return null;
 
     return (
         <>
@@ -400,6 +418,9 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
                                                     {contact.banks.map(bank => <img key={bank.id} src={bank.logoUrl} alt={bank.name}/>)}
                                                 </div>
                                             </div>
+                                            <button className="delete-contact-btn" onClick={() => handleDeleteContact(contact.id)}>
+                                                <TrashIcon />
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -416,6 +437,78 @@ export const ProfileModal: React.FC<{ isOpen: boolean, onClose: () => void, user
     );
 };
 
+export const TransactionHistoryModal: React.FC<{ isOpen: boolean, onClose: () => void, transactions: Transaction[] }> = ({ isOpen, onClose, transactions }) => {
+    const modalRef = useRef<HTMLDivElement>(null);
+
+    const formatDateGroup = (date: Date) => {
+        const today = new Date();
+        const yesterday = new Date(today);
+        yesterday.setDate(yesterday.getDate() - 1);
+        
+        if (date.toDateString() === today.toDateString()) return 'Сегодня';
+        if (date.toDateString() === yesterday.toDateString()) return 'Вчера';
+        
+        return date.toLocaleDateString('ru-RU', { day: 'numeric', month: 'long' });
+    };
+
+    const groupedTransactions = transactions
+        .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+        .reduce((acc, transaction) => {
+            const date = new Date(transaction.date).toDateString();
+            if (!acc[date]) {
+                acc[date] = [];
+            }
+            acc[date].push(transaction);
+            return acc;
+        }, {} as Record<string, Transaction[]>);
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
+                onClose();
+            }
+        };
+        if (isOpen) document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [isOpen, onClose]);
+
+    if (!isOpen) return null;
+
+    return (
+        <>
+            <div className={`modal-overlay ${isOpen ? 'open' : ''}`} onClick={onClose}></div>
+            <div ref={modalRef} className={`modal-container ${isOpen ? 'open' : ''}`}>
+                <div className="modal-handle"></div>
+                <h2 className="modal-header">История операций</h2>
+                <div className="modal-content">
+                    {Object.entries(groupedTransactions).map(([dateStr, transactionsOnDate]) => (
+                        <div key={dateStr} className="transaction-group">
+                            <h3 className="transaction-date-header">{formatDateGroup(new Date(dateStr))}</h3>
+                            <div className="transaction-list">
+                                {transactionsOnDate.map(tx => (
+                                    <div key={tx.id} className="transaction-item">
+                                        <div className="transaction-icon" style={{ backgroundColor: tx.iconBg }}>
+                                            <TransactionIcon category={tx.category} />
+                                        </div>
+                                        <div className="transaction-details">
+                                            <div className="transaction-name">{tx.name}</div>
+                                            <div className="transaction-category">{tx.description}</div>
+                                        </div>
+                                        <div className={`transaction-amount ${tx.amount < 0 ? 'expense' : 'income'}`}>
+                                            {tx.amount < 0 ? '- ' : '+ '}
+                                            {Math.abs(tx.amount).toLocaleString('ru-RU')} ₽
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        </>
+    );
+};
+
 export const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
     <main style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', paddingBottom: '80px' }}>
         <h1 style={{textTransform: 'capitalize', color: '#858D97'}}>{title}</h1>
@@ -424,10 +517,10 @@ export const PlaceholderScreen: React.FC<{ title: string }> = ({ title }) => (
 
 export const BottomNav: React.FC<{ activeTab: TabName, setActiveTab: (tab: TabName) => void }> = ({ activeTab, setActiveTab }) => {
     const navItems = [
-        { id: 'main', label: 'Главная', icon: <svg viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"></path></svg> },
-        { id: 'payments', label: 'Платежи', icon: <svg viewBox="0 0 24 24"><path d="M21 18v1c0 1.1-.9 2-2 2H5c-1.11 0-2-.9-2-2V5c0-1.1.89-2 2-2h14c1.1 0 2 .9 2 2v1h-9c-1.11 0-2 .9-2 2v8c0 1.1.89 2 2 2h9zm-9-2h10V8H12v8zm4-2.5c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"></path></svg> },
-        { id: 'city', label: 'Город', icon: <svg viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm-1-12.55l5.55 2.22-2.22 5.55-5.55-2.22 2.22-5.55z"></path></svg> },
-        { id: 'chat', label: 'Чат', icon: <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path></svg> },
+        { id: 'main', label: 'Главная', icon: <svg viewBox="0 0 24 24"><path d="M12 5.69l5 4.5V18h-2v-6H9v6H7v-7.81l5-4.5M12 3L2 12h3v8h6v-6h2v6h6v-8h3L12 3z"></path></svg> },
+        { id: 'payments', label: 'Платежи', icon: <svg viewBox="0 0 24 24"><path d="M21 7.28V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2v-2.28c.59-.3 1-1.02 1-1.72v-4c0-.7-.41-1.42-1-1.72zM20 9v6h-7V9h7zM5 19V5h14v2h-6c-1.1 0-2 .9-2 2v6c0 1.1.9 2 2 2h6v2H5z"></path></svg> },
+        { id: 'city', label: 'Город', icon: <svg viewBox="0 0 24 24"><path d="M8.29 6.71L3.58 11.41l4.71 4.7c.39.39 1.02.39 1.41 0 .39-.39.39-1.02 0-1.41L6.41 12l3.29-3.29c.39-.39.39-1.02 0-1.41a.996.996 0 00-1.41 0zm7.42 10.58l4.71-4.7-4.71-4.7a.996.996 0 00-1.41 0c-.39.39-.39 1.02 0 1.41L17.59 12l-3.29 3.29c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0z"></path></svg> },
+        { id: 'chat', label: 'Чат', icon: <svg viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path></svg> },
         { id: 'more', label: 'Ещё', icon: <svg viewBox="0 0 24 24"><path d="M6 10c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm12 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm-6 0c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"></path></svg> },
     ];
     return (
@@ -435,7 +528,7 @@ export const BottomNav: React.FC<{ activeTab: TabName, setActiveTab: (tab: TabNa
             {navItems.map(item => (
                  <div key={item.id} className={`nav-item ${activeTab === item.id ? 'active' : ''}`} onClick={() => setActiveTab(item.id as TabName)}>
                     {item.id === 'chat' && <div className="nav-notification">2</div>}
-                    {item.icon}
+                    <div className="icon-container">{item.icon}</div>
                     <span>{item.label}</span>
                 </div>
             ))}
